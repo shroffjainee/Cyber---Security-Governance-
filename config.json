@@ -1,0 +1,44 @@
+{
+  "_note": "All weights and thresholds were fixed before evaluation; no tuning was done on test data.",
+  "severity_weight": {
+    "high": 1.0,
+    "medium": 0.6,
+    "low": 0.25
+  },
+  "saturation_k": 0.5,
+  "hygiene_weight": 0.3,
+  "technical_weights": {
+    "compliance": 0.35,
+    "drift": 0.25,
+    "vulnerability": 0.4
+  },
+  "context": {
+    "base": 0.3,
+    "criticality_gain": 0.7,
+    "public_exposure_multiplier": 1.3,
+    "regulated_multiplier": 1.15
+  },
+  "epss_floor": 0.2,
+  "default_epss_if_unknown": 0.1,
+  "drift_threshold": 5.0,
+  "cumulative_window": 3,
+  "cumulative_threshold": 7.5,
+  "high_risk_threshold": 40.0,
+  "baseline": {
+    "alert_on_new_failed_rule": true,
+    "low_score_threshold": 70.0,
+    "cvss_alert_threshold": 7.0
+  },
+  "privacy": {
+    "pseudonymize_hostnames": true,
+    "secret_env_var": "CCM_PSEUDO_KEY"
+  },
+  "real_mode": {
+    "openscap_datastream": "/usr/share/xml/scap/ssg/content/ssg-ubuntu2204-ds.xml",
+    "openscap_profile": "xccdf_org.ssgproject.content_profile_cis_level1_server",
+    "tls_targets": [
+      "localhost:443"
+    ],
+    "trivy_enabled": true
+  }
+}
