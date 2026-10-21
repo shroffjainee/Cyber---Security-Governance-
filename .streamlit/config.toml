@@ -1,8 +1,10 @@
+# Same identity as the web console (dashboard/console_template.html): dark control-room theme, amber signal accent
 [theme]
-primaryColor = "#1f3a5f"
-backgroundColor = "#ffffff"
-secondaryBackgroundColor = "#eef1f5"
-textColor = "#1d2733"
+base = "dark"
+primaryColor = "#F2A93B"
+backgroundColor = "#0A100F"
+secondaryBackgroundColor = "#121C1B"
+textColor = "#E9F0ED"
 font = "sans serif"
 
 [browser]
