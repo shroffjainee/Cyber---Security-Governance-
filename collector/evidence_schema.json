@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RDF normalized evidence document",
+  "type": "object",
+  "required": ["schema_version", "data_origin", "collector_version", "collected_at", "asset", "policy_params", "checks"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "data_origin": {"enum": ["HOST", "SYNTHETIC"]},
+    "collector_version": {"type": "string", "minLength": 1},
+    "collected_at": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"},
+    "asset": {
+      "type": "object",
+      "required": ["asset_id"],
+      "properties": {
+        "asset_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,64}$"},
+        "hostname": {"type": ["string", "null"]},
+        "os_release": {"type": "object"}
+      }
+    },
+    "policy_params": {"type": "object"},
+    "checks": {
+      "type": "object",
+      "propertyNames": {"enum": ["SSH-001", "SSH-002", "FW-001", "SVC-001", "FILE-001", "PWD-001", "LOCK-001", "UPD-001"]},
+      "additionalProperties": {
+        "type": "object",
+        "required": ["check_id", "title", "collected_at", "collector_status", "evidence", "sources", "errors"],
+        "properties": {
+          "check_id": {"type": "string"},
+          "title": {"type": "string"},
+          "collected_at": {"type": "string"},
+          "collector_status": {"enum": ["OK", "PARTIAL", "ERROR"]},
+          "evidence": {"type": "object"},
+          "sources": {"type": "array", "items": {"type": "string"}},
+          "errors": {"type": "array", "items": {"type": "string"}},
+          "limitations": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    }
+  }
+}
