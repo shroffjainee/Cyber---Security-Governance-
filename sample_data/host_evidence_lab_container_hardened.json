@@ -1,0 +1,366 @@
+{
+  "asset": {
+    "asset_id": "lab-ubuntu-container",
+    "hostname": "vm",
+    "os_release": {
+      "id": "ubuntu",
+      "pretty_name": "Ubuntu 24.04.5 LTS",
+      "version_id": "24.04"
+    }
+  },
+  "checks": {
+    "FILE-001": {
+      "check_id": "FILE-001",
+      "collected_at": "2026-10-21T09:45:20Z",
+      "collector_status": "OK",
+      "errors": [],
+      "evidence": {
+        "files": {
+          "/etc/group": {
+            "exists": true,
+            "gid": 0,
+            "group": "root",
+            "is_regular": true,
+            "mode": 420,
+            "mode_octal": "0644",
+            "owner": "root",
+            "uid": 0
+          },
+          "/etc/gshadow": {
+            "exists": true,
+            "gid": 42,
+            "group": "shadow",
+            "is_regular": true,
+            "mode": 416,
+            "mode_octal": "0640",
+            "owner": "root",
+            "uid": 0
+          },
+          "/etc/passwd": {
+            "exists": true,
+            "gid": 0,
+            "group": "root",
+            "is_regular": true,
+            "mode": 420,
+            "mode_octal": "0644",
+            "owner": "root",
+            "uid": 0
+          },
+          "/etc/shadow": {
+            "exists": true,
+            "gid": 42,
+            "group": "shadow",
+            "is_regular": true,
+            "mode": 416,
+            "mode_octal": "0640",
+            "owner": "root",
+            "uid": 0
+          }
+        }
+      },
+      "limitations": [],
+      "sources": [
+        "stat /etc/group",
+        "stat /etc/gshadow",
+        "stat /etc/passwd",
+        "stat /etc/shadow"
+      ],
+      "title": "Account database file permissions and ownership"
+    },
+    "FW-001": {
+      "check_id": "FW-001",
+      "collected_at": "2026-10-21T09:45:19Z",
+      "collector_status": "OK",
+      "errors": [],
+      "evidence": {
+        "active": true,
+        "default_incoming": "deny",
+        "default_outgoing": "allow",
+        "firewall_tool": "ufw",
+        "installed": true,
+        "method": "ufw status verbose",
+        "rule_count": 1,
+        "rules": [
+          "22/tcp | ALLOW IN | Anywhere"
+        ]
+      },
+      "limitations": [],
+      "sources": [
+        "ufw status verbose"
+      ],
+      "title": "Host firewall (UFW) active with default-deny inbound"
+    },
+    "LOCK-001": {
+      "check_id": "LOCK-001",
+      "collected_at": "2026-10-21T09:45:20Z",
+      "collector_status": "OK",
+      "errors": [],
+      "evidence": {
+        "deny": 5,
+        "even_deny_root": false,
+        "fail_interval": 900,
+        "faillock_account": true,
+        "faillock_authfail": true,
+        "faillock_preauth": true,
+        "pam_tally2_present": false,
+        "unlock_time": 900,
+        "value_origin": {
+          "deny": "/etc/security/faillock.conf",
+          "fail_interval": "/etc/security/faillock.conf",
+          "unlock_time": "/etc/security/faillock.conf"
+        }
+      },
+      "limitations": [
+        "Only the common-auth/common-account stacks are inspected; service-specific PAM files may differ."
+      ],
+      "sources": [
+        "/etc/pam.d/common-account",
+        "/etc/pam.d/common-auth",
+        "/etc/security/faillock.conf"
+      ],
+      "title": "Account lockout after failed logins (pam_faillock)"
+    },
+    "PWD-001": {
+      "check_id": "PWD-001",
+      "collected_at": "2026-10-21T09:45:20Z",
+      "collector_status": "OK",
+      "errors": [],
+      "evidence": {
+        "dcredit": 0,
+        "lcredit": 0,
+        "minclass": 3,
+        "minlen": 14,
+        "ocredit": 0,
+        "pass_max_days": 365,
+        "pass_min_days": 1,
+        "pass_warn_age": 7,
+        "pwquality_enabled": true,
+        "quality_module": "pam_pwquality",
+        "ucredit": 0,
+        "value_origin": {
+          "dcredit": "pwquality_default",
+          "lcredit": "pwquality_default",
+          "minclass": "/etc/security/pwquality.conf.d/00-rdf-lab.conf",
+          "minlen": "/etc/security/pwquality.conf.d/00-rdf-lab.conf",
+          "ocredit": "pwquality_default",
+          "ucredit": "pwquality_default"
+        }
+      },
+      "limitations": [
+        "login.defs ageing applies to newly created accounts; existing accounts need 'chage -l' review."
+      ],
+      "sources": [
+        "/etc/login.defs",
+        "/etc/pam.d/common-password",
+        "/etc/security/pwquality.conf",
+        "/etc/security/pwquality.conf.d/00-rdf-lab.conf"
+      ],
+      "title": "Password quality and ageing requirements"
+    },
+    "SSH-001": {
+      "check_id": "SSH-001",
+      "collected_at": "2026-10-21T09:45:19Z",
+      "collector_status": "OK",
+      "errors": [],
+      "evidence": {
+        "config_files": [
+          "/etc/ssh/sshd_config",
+          "/etc/ssh/sshd_config.d/00-rdf-lab.conf"
+        ],
+        "match_overrides": [],
+        "method": "sshd -T",
+        "permit_root_login": "no",
+        "sshd_installed": true,
+        "value_origin": "effective (sshd -T)"
+      },
+      "limitations": [],
+      "sources": [
+        "/etc/ssh/sshd_config",
+        "/etc/ssh/sshd_config.d/00-rdf-lab.conf",
+        "dpkg-query openssh-server",
+        "sshd -T",
+        "sshd binary present"
+      ],
+      "title": "SSH root login disabled"
+    },
+    "SSH-002": {
+      "check_id": "SSH-002",
+      "collected_at": "2026-10-21T09:45:19Z",
+      "collector_status": "OK",
+      "errors": [],
+      "evidence": {
+        "config_files": [
+          "/etc/ssh/sshd_config",
+          "/etc/ssh/sshd_config.d/00-rdf-lab.conf"
+        ],
+        "kbd_interactive_authentication": "no",
+        "match_overrides": [],
+        "method": "sshd -T",
+        "password_authentication": "no",
+        "sshd_installed": true,
+        "value_origin": {
+          "kbd_interactive_authentication": "effective (sshd -T)",
+          "password_authentication": "effective (sshd -T)"
+        }
+      },
+      "limitations": [],
+      "sources": [
+        "/etc/ssh/sshd_config",
+        "/etc/ssh/sshd_config.d/00-rdf-lab.conf",
+        "dpkg-query openssh-server",
+        "sshd -T",
+        "sshd binary present"
+      ],
+      "title": "SSH password authentication disabled"
+    },
+    "SVC-001": {
+      "check_id": "SVC-001",
+      "collected_at": "2026-10-21T09:45:20Z",
+      "collector_status": "PARTIAL",
+      "errors": [
+        "running units unavailable: System has not been booted with systemd as init system (PID 1). Can't operate.\nFailed to connect to bus: Host is down"
+      ],
+      "evidence": {
+        "enabled_units": [
+          "containerd",
+          "docker",
+          "e2scrub_reap",
+          "getty@",
+          "inetutils-inetd",
+          "inetutils-syslogd",
+          "postgresql",
+          "redis-server",
+          "ssh",
+          "ssl-cert",
+          "systemd-pstore",
+          "ufw",
+          "unattended-upgrades"
+        ],
+        "method": "proc_fallback",
+        "running_units": []
+      },
+      "limitations": [
+        "systemd unavailable: running services taken from the process table; enabled (start-at-boot) units could not be determined."
+      ],
+      "sources": [
+        "/proc/*/comm (running process names; systemd unavailable)",
+        "systemctl list-unit-files (enabled)"
+      ],
+      "title": "No prohibited network services running or enabled"
+    },
+    "UPD-001": {
+      "check_id": "UPD-001",
+      "collected_at": "2026-10-21T09:45:20Z",
+      "collector_status": "OK",
+      "errors": [],
+      "evidence": {
+        "allowed_origins": [
+          "${distro_id}:${distro_codename}",
+          "${distro_id}:${distro_codename}-security",
+          "${distro_id}ESM:${distro_codename}-infra-security",
+          "${distro_id}ESMApps:${distro_codename}-apps-security"
+        ],
+        "method": "apt-config dump",
+        "package_installed": true,
+        "periodic_enable": 1,
+        "security_origin": true,
+        "unattended_upgrade": 1,
+        "update_package_lists": 1,
+        "update_timer_enabled": true,
+        "upgrade_timer_active": null,
+        "upgrade_timer_enabled": true
+      },
+      "limitations": [],
+      "sources": [
+        "apt-config dump",
+        "dpkg-query unattended-upgrades",
+        "systemctl is-enabled apt-daily-upgrade.timer",
+        "systemctl is-enabled apt-daily.timer"
+      ],
+      "title": "Automatic security updates enabled"
+    }
+  },
+  "collected_at": "2026-10-21T09:45:20Z",
+  "collector_version": "rdf-collector-1.0",
+  "data_origin": "HOST",
+  "policy_params": {
+    "file_baseline": {
+      "/etc/group": {
+        "groups": [
+          "root"
+        ],
+        "max_mode": "0644",
+        "owner": "root"
+      },
+      "/etc/gshadow": {
+        "groups": [
+          "root",
+          "shadow"
+        ],
+        "max_mode": "0640",
+        "owner": "root"
+      },
+      "/etc/passwd": {
+        "groups": [
+          "root"
+        ],
+        "max_mode": "0644",
+        "owner": "root"
+      },
+      "/etc/shadow": {
+        "groups": [
+          "root",
+          "shadow"
+        ],
+        "max_mode": "0640",
+        "owner": "root"
+      }
+    },
+    "firewall_allowed_default_incoming": [
+      "deny",
+      "reject"
+    ],
+    "firewall_tool": "ufw",
+    "lockout_max_deny": 5,
+    "lockout_min_unlock_time": 900,
+    "password_max_days": 365,
+    "password_min_classes": 3,
+    "password_min_days": 1,
+    "password_min_length": 14,
+    "services_allowlist": [],
+    "services_allowlist_mode": false,
+    "services_denylist": [
+      "telnet",
+      "telnetd",
+      "inetutils-telnetd",
+      "rsh",
+      "rlogin",
+      "rexec",
+      "vsftpd",
+      "proftpd",
+      "pure-ftpd",
+      "tftpd-hpa",
+      "xinetd",
+      "avahi-daemon",
+      "cups",
+      "cups-browsed",
+      "snmpd",
+      "rpcbind",
+      "nfs-server",
+      "smbd",
+      "nmbd",
+      "slapd",
+      "isc-dhcp-server",
+      "squid",
+      "dovecot"
+    ],
+    "ssh_absent_is_compliant": true,
+    "ssh_allowed_permit_root_login": [
+      "no"
+    ],
+    "ssh_password_authentication_allowed": false,
+    "updates_require_security_origin": true,
+    "updates_require_timer": true
+  },
+  "schema_version": "1.0"
+}
