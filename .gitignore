@@ -1,5 +1,10 @@
+data/*
+!data/showcase.sqlite3
+!data/real_lab.sqlite3
+!data/real_lab_experiment.log
+!data/demo_synthetic.sqlite3
+.venv/
 __pycache__/
 *.pyc
-.venv/
-data/real.db
-.env
+.pytest_cache/
+bin/

@@ -1,8 +1,14 @@
-pandas>=2.0
-numpy>=1.24
-scipy>=1.10
-matplotlib>=3.7
+# Runtime dependencies (all free / open source)
 streamlit>=1.50
-altair>=5.0
-cryptography>=42.0
-tabulate>=0.9
+pandas>=2.0
+plotly>=5.18
+jsonschema>=4.19
+defusedxml>=0.7.1
+
+matplotlib>=3.8          # paper figures (python cli.py figures)
+
+# Test dependencies
+pytest>=7.4
+
+# NOT a pip package — install separately (see README "Install OPA"):
+#   Open Policy Agent (opa) static binary, v0.60+ or v1.x
