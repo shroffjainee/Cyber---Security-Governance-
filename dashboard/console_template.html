@@ -270,8 +270,8 @@ function renderMast(){
  const b=bandOf(meanRisk),gc=BD[b]||"var(--mute)";
  const fails=A.flatMap(a=>a.checks).filter(c=>c.status=="NON_COMPLIANT").length, tot=A.flatMap(a=>a.checks).length;
  const sig=A.reduce((n,a)=>n+a.scores.filter(s=>s.drift&&s.drift.sig).length,0);
- $("#hero").innerHTML=`<div><div class="cap">${esc(M.phase||"M.Tech Dissertation")}</div><h1>${t}</h1>
-  <div class="by"><b>${esc(M.author)}</b>${M.enrolment?` · ${esc(M.enrolment)}`:""} · ${esc(M.program)}${M.institute?`, ${esc(M.institute)}`:""}${M.guides?`<br>${esc(M.guides)}`:""}</div></div>
+ $("#hero").innerHTML=`<div><div class="cap">${esc(M.phase||"Continuous compliance monitoring")}</div><h1>${t}</h1>
+  ${M.author?`<div class="by"><b>${esc(M.author)}</b></div>`:""}</div>
   <div class="dial"><div class="cap" style="display:flex;justify-content:space-between;gap:10px"><span>Portfolio risk posture</span><span>${esc(D.model.version)}</span></div>${dial(meanRisk,gc,b)}
   <div class="row"><span>Assets monitored</span><b>${A.length}</b></div><div class="row"><span>Controls failing now</span><b style="color:${fails?"var(--bad)":"var(--ok)"}">${fails} / ${tot}</b></div>
   <div class="row"><span>Significant risk shifts recorded</span><b style="color:var(--amber)">${sig}</b></div></div>`;
