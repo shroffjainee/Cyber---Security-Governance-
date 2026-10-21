@@ -1,0 +1,4 @@
+IP,Hostname,Port,Port Protocol,CVSS,Severity,QoD,Solution Type,NVT Name,Summary,Specific Result,NVT OID,CVEs,Task ID,Task Name,Timestamp,Result ID,Impact,Solution
+192.168.56.10,,22,tcp,9.8,High,80,VendorFix,OpenSSH Multiple Vulnerabilities (synthetic),Synthetic finding,,1.3.6.1.4.1.25623.1.0.900001,CVE-2023-38408,synthetic-task,SYNTHETIC,2026-09-01T07:40:00Z,syn-r1,,Update
+192.168.56.10,,22,tcp,2.6,Low,80,VendorFix,Weak SSH MAC algorithms (synthetic),Synthetic finding,,1.3.6.1.4.1.25623.1.0.900002,,synthetic-task,SYNTHETIC,2026-09-01T07:40:00Z,syn-r2,,Update
+192.168.56.10,,general,tcp,2.6,Low,80,VendorFix,TCP timestamps information disclosure (synthetic),Synthetic finding,,1.3.6.1.4.1.25623.1.0.900003,,synthetic-task,SYNTHETIC,2026-09-01T07:40:00Z,syn-r3,,Update

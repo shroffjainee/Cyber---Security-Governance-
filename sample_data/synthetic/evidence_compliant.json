@@ -1,0 +1,319 @@
+{
+  "schema_version": "1.0",
+  "data_origin": "SYNTHETIC",
+  "collector_version": "rdf-collector-1.0",
+  "collected_at": "2026-09-01T08:00:00Z",
+  "asset": {
+    "asset_id": "syn-sample",
+    "hostname": "syn-sample",
+    "os_release": {
+      "id": "ubuntu",
+      "version_id": "24.04",
+      "pretty_name": "Ubuntu 24.04 LTS (synthetic)"
+    }
+  },
+  "policy_params": {
+    "ssh_allowed_permit_root_login": [
+      "no"
+    ],
+    "ssh_password_authentication_allowed": false,
+    "ssh_absent_is_compliant": true,
+    "firewall_tool": "ufw",
+    "firewall_allowed_default_incoming": [
+      "deny",
+      "reject"
+    ],
+    "services_denylist": [
+      "telnet",
+      "telnetd",
+      "inetutils-telnetd",
+      "rsh",
+      "rlogin",
+      "rexec",
+      "vsftpd",
+      "proftpd",
+      "pure-ftpd",
+      "tftpd-hpa",
+      "xinetd",
+      "avahi-daemon",
+      "cups",
+      "cups-browsed",
+      "snmpd",
+      "rpcbind",
+      "nfs-server",
+      "smbd",
+      "nmbd",
+      "slapd",
+      "isc-dhcp-server",
+      "squid",
+      "dovecot"
+    ],
+    "services_allowlist_mode": false,
+    "services_allowlist": [],
+    "file_baseline": {
+      "/etc/passwd": {
+        "owner": "root",
+        "groups": [
+          "root"
+        ],
+        "max_mode": "0644"
+      },
+      "/etc/shadow": {
+        "owner": "root",
+        "groups": [
+          "root",
+          "shadow"
+        ],
+        "max_mode": "0640"
+      },
+      "/etc/group": {
+        "owner": "root",
+        "groups": [
+          "root"
+        ],
+        "max_mode": "0644"
+      },
+      "/etc/gshadow": {
+        "owner": "root",
+        "groups": [
+          "root",
+          "shadow"
+        ],
+        "max_mode": "0640"
+      }
+    },
+    "password_min_length": 14,
+    "password_min_classes": 3,
+    "password_max_days": 365,
+    "password_min_days": 1,
+    "lockout_max_deny": 5,
+    "lockout_min_unlock_time": 900,
+    "updates_require_security_origin": true,
+    "updates_require_timer": true
+  },
+  "checks": {
+    "SSH-001": {
+      "check_id": "SSH-001",
+      "title": "SSH root login disabled",
+      "collected_at": "2026-09-01T08:00:00Z",
+      "collector_status": "OK",
+      "evidence": {
+        "sshd_installed": true,
+        "method": "sshd -T",
+        "config_files": [
+          "/etc/ssh/sshd_config"
+        ],
+        "permit_root_login": "no",
+        "value_origin": "effective (sshd -T)",
+        "match_overrides": []
+      },
+      "sources": [
+        "synthetic fixture"
+      ],
+      "errors": [],
+      "limitations": []
+    },
+    "SSH-002": {
+      "check_id": "SSH-002",
+      "title": "SSH password authentication disabled",
+      "collected_at": "2026-09-01T08:00:00Z",
+      "collector_status": "OK",
+      "evidence": {
+        "sshd_installed": true,
+        "method": "sshd -T",
+        "config_files": [
+          "/etc/ssh/sshd_config"
+        ],
+        "password_authentication": "no",
+        "kbd_interactive_authentication": "no",
+        "value_origin": {
+          "password_authentication": "effective (sshd -T)",
+          "kbd_interactive_authentication": "effective (sshd -T)"
+        },
+        "match_overrides": []
+      },
+      "sources": [
+        "synthetic fixture"
+      ],
+      "errors": [],
+      "limitations": []
+    },
+    "FW-001": {
+      "check_id": "FW-001",
+      "title": "Host firewall (UFW) active with default-deny inbound",
+      "collected_at": "2026-09-01T08:00:00Z",
+      "collector_status": "OK",
+      "evidence": {
+        "firewall_tool": "ufw",
+        "installed": true,
+        "active": true,
+        "default_incoming": "deny",
+        "default_outgoing": "allow",
+        "rules": [
+          "22/tcp | ALLOW IN | Anywhere"
+        ],
+        "rule_count": 1,
+        "method": "ufw status verbose"
+      },
+      "sources": [
+        "synthetic fixture"
+      ],
+      "errors": [],
+      "limitations": []
+    },
+    "SVC-001": {
+      "check_id": "SVC-001",
+      "title": "No prohibited network services running or enabled",
+      "collected_at": "2026-09-01T08:00:00Z",
+      "collector_status": "OK",
+      "evidence": {
+        "running_units": [
+          "cron",
+          "rsyslog",
+          "ssh",
+          "systemd-journald"
+        ],
+        "enabled_units": [
+          "cron",
+          "rsyslog",
+          "ssh",
+          "ufw"
+        ]
+      },
+      "sources": [
+        "synthetic fixture"
+      ],
+      "errors": [],
+      "limitations": []
+    },
+    "FILE-001": {
+      "check_id": "FILE-001",
+      "title": "Account database file permissions and ownership",
+      "collected_at": "2026-09-01T08:00:00Z",
+      "collector_status": "OK",
+      "evidence": {
+        "files": {
+          "/etc/passwd": {
+            "exists": true,
+            "mode": 420,
+            "mode_octal": "0644",
+            "uid": 0,
+            "gid": 0,
+            "owner": "root",
+            "group": "root",
+            "is_regular": true
+          },
+          "/etc/shadow": {
+            "exists": true,
+            "mode": 416,
+            "mode_octal": "0640",
+            "uid": 0,
+            "gid": 42,
+            "owner": "root",
+            "group": "shadow",
+            "is_regular": true
+          },
+          "/etc/group": {
+            "exists": true,
+            "mode": 420,
+            "mode_octal": "0644",
+            "uid": 0,
+            "gid": 0,
+            "owner": "root",
+            "group": "root",
+            "is_regular": true
+          },
+          "/etc/gshadow": {
+            "exists": true,
+            "mode": 416,
+            "mode_octal": "0640",
+            "uid": 0,
+            "gid": 42,
+            "owner": "root",
+            "group": "shadow",
+            "is_regular": true
+          }
+        }
+      },
+      "sources": [
+        "synthetic fixture"
+      ],
+      "errors": [],
+      "limitations": []
+    },
+    "PWD-001": {
+      "check_id": "PWD-001",
+      "title": "Password quality and ageing requirements",
+      "collected_at": "2026-09-01T08:00:00Z",
+      "collector_status": "OK",
+      "evidence": {
+        "quality_module": "pam_pwquality",
+        "pwquality_enabled": true,
+        "minlen": 14,
+        "minclass": 3,
+        "dcredit": 0,
+        "ucredit": 0,
+        "lcredit": 0,
+        "ocredit": 0,
+        "value_origin": {
+          "minlen": "/etc/security/pwquality.conf"
+        },
+        "pass_max_days": 90,
+        "pass_min_days": 1,
+        "pass_warn_age": 7
+      },
+      "sources": [
+        "synthetic fixture"
+      ],
+      "errors": [],
+      "limitations": []
+    },
+    "LOCK-001": {
+      "check_id": "LOCK-001",
+      "title": "Account lockout after failed logins (pam_faillock)",
+      "collected_at": "2026-09-01T08:00:00Z",
+      "collector_status": "OK",
+      "evidence": {
+        "faillock_preauth": true,
+        "faillock_authfail": true,
+        "faillock_account": true,
+        "pam_tally2_present": false,
+        "deny": 5,
+        "unlock_time": 900,
+        "fail_interval": 900,
+        "even_deny_root": false,
+        "value_origin": {}
+      },
+      "sources": [
+        "synthetic fixture"
+      ],
+      "errors": [],
+      "limitations": []
+    },
+    "UPD-001": {
+      "check_id": "UPD-001",
+      "title": "Automatic security updates enabled",
+      "collected_at": "2026-09-01T08:00:00Z",
+      "collector_status": "OK",
+      "evidence": {
+        "package_installed": true,
+        "update_package_lists": 1,
+        "unattended_upgrade": 1,
+        "periodic_enable": null,
+        "allowed_origins": [
+          "${distro_id}:${distro_codename}-security"
+        ],
+        "security_origin": true,
+        "upgrade_timer_enabled": true,
+        "upgrade_timer_active": true,
+        "update_timer_enabled": true,
+        "method": "apt-config dump"
+      },
+      "sources": [
+        "synthetic fixture"
+      ],
+      "errors": [],
+      "limitations": []
+    }
+  }
+}
