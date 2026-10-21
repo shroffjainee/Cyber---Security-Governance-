@@ -1,0 +1,556 @@
+##### TRIAL 1 of 3 #####
+=== [T1 R1 hardened baseline] 2026-10-21T10:15:41Z ===
+Run 1: COMPLETE 
+  FILE-001  COMPLIANT      All account database files match the ownership/permission baseline
+  FW-001    COMPLIANT      UFW is active with a restrictive default inbound policy
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   COMPLIANT      Password quality and ageing meet policy
+  SSH-001   COMPLIANT      PermitRootLogin is 'no' via sshd -T
+  SSH-002   COMPLIANT      Password and keyboard-interactive authentication are disabled
+  SVC-001   COMPLIANT      No prohibited services running or enabled
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+  DRIFT BASELINE               INFO     First comparable assessment for this asset: baseline recorded (not drift).
+Risk score: 13.64 (PARTIAL, band Low, bounds 7.5-52.5)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [7.5, 52.5].
+
+=== [T1 R2 no change (stability check - expect no drift)] 2026-10-21T10:15:49Z ===
+Run 2: COMPLETE 
+  FILE-001  COMPLIANT      All account database files match the ownership/permission baseline
+  FW-001    COMPLIANT      UFW is active with a restrictive default inbound policy
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   COMPLIANT      Password quality and ageing meet policy
+  SSH-001   COMPLIANT      PermitRootLogin is 'no' via sshd -T
+  SSH-002   COMPLIANT      Password and keyboard-interactive authentication are disabled
+  SVC-001   COMPLIANT      No prohibited services running or enabled
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+Risk score: 13.64 (PARTIAL, band Low, bounds 7.5-52.5)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [7.5, 52.5].
+
+=== [T1 R3 PermitRootLogin changed to yes] 2026-10-21T10:15:58Z ===
+Run 3: COMPLETE 
+  FILE-001  COMPLIANT      All account database files match the ownership/permission baseline
+  FW-001    COMPLIANT      UFW is active with a restrictive default inbound policy
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   COMPLIANT      Password quality and ageing meet policy
+  SSH-001   NON_COMPLIANT  PermitRootLogin is 'yes' (source: effective (sshd -T))
+  SSH-002   COMPLIANT      Password and keyboard-interactive authentication are disabled
+  SVC-001   COMPLIANT      No prohibited services running or enabled
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+  DRIFT NEW_NON_COMPLIANCE     CRITICAL SSH-001 (SSH root login disabled) changed from COMPLIANT to NON_COMPLIANT: PermitRootLogin is 'yes' (source: effective (
+Risk score: 35.51 (PARTIAL, band Medium, bounds 19.53-64.53)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [19.5, 64.5].
+
+=== [T1 R4 UFW firewall disabled] 2026-10-21T10:16:08Z ===
+Run 4: COMPLETE 
+  FILE-001  COMPLIANT      All account database files match the ownership/permission baseline
+  FW-001    NON_COMPLIANT  UFW is installed but inactive
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   COMPLIANT      Password quality and ageing meet policy
+  SSH-001   NON_COMPLIANT  PermitRootLogin is 'yes' (source: effective (sshd -T))
+  SSH-002   COMPLIANT      Password and keyboard-interactive authentication are disabled
+  SVC-001   COMPLIANT      No prohibited services running or enabled
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+  DRIFT NEW_NON_COMPLIANCE     CRITICAL FW-001 (Host firewall (UFW) active with default-deny inbound) changed from COMPLIANT to NON_COMPLIANT: UFW is installed 
+Risk score: 57.39 (PARTIAL, band High, bounds 31.56-76.56)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [31.6, 76.6].
+
+=== [T1 R5 prohibited service vsftpd started] 2026-10-21T10:16:17Z ===
+Run 5: COMPLETE 
+  FILE-001  COMPLIANT      All account database files match the ownership/permission baseline
+  FW-001    NON_COMPLIANT  UFW is installed but inactive
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   COMPLIANT      Password quality and ageing meet policy
+  SSH-001   NON_COMPLIANT  PermitRootLogin is 'yes' (source: effective (sshd -T))
+  SSH-002   COMPLIANT      Password and keyboard-interactive authentication are disabled
+  SVC-001   NON_COMPLIANT  Prohibited service present: vsftpd
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+  DRIFT NEW_NON_COMPLIANCE     HIGH     SVC-001 (No prohibited network services running or enabled) changed from COMPLIANT to NON_COMPLIANT: Prohibited service 
+Risk score: 69.06 (PARTIAL, band High, bounds 37.98-82.98)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [38.0, 83.0].
+
+=== [T1 R6 /etc/shadow made world-readable (0644)] 2026-10-21T10:16:26Z ===
+Run 6: COMPLETE 
+  FILE-001  NON_COMPLIANT  /etc/shadow mode 0644 is more permissive than 0640
+  FW-001    NON_COMPLIANT  UFW is installed but inactive
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   COMPLIANT      Password quality and ageing meet policy
+  SSH-001   NON_COMPLIANT  PermitRootLogin is 'yes' (source: effective (sshd -T))
+  SSH-002   COMPLIANT      Password and keyboard-interactive authentication are disabled
+  SVC-001   NON_COMPLIANT  Prohibited service present: vsftpd
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+  DRIFT NEW_NON_COMPLIANCE     CRITICAL FILE-001 (Account database file permissions and ownership) changed from COMPLIANT to NON_COMPLIANT: /etc/shadow mode 064
+Risk score: 75.66 (PARTIAL, band Critical, bounds 41.61-86.61)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [41.6, 86.6].
+
+=== [T1 R7 SSH password authentication enabled] 2026-10-21T10:16:35Z ===
+Run 7: COMPLETE 
+  FILE-001  NON_COMPLIANT  /etc/shadow mode 0644 is more permissive than 0640
+  FW-001    NON_COMPLIANT  UFW is installed but inactive
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   COMPLIANT      Password quality and ageing meet policy
+  SSH-001   NON_COMPLIANT  PermitRootLogin is 'yes' (source: effective (sshd -T))
+  SSH-002   NON_COMPLIANT  password_authentication is 'yes' (source: effective (sshd -T))
+  SVC-001   NON_COMPLIANT  Prohibited service present: vsftpd
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+  DRIFT NEW_NON_COMPLIANCE     HIGH     SSH-002 (SSH password authentication disabled) changed from COMPLIANT to NON_COMPLIANT: password_authentication is 'yes'
+Risk score: 82.26 (PARTIAL, band Critical, bounds 45.24-90.24)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [45.2, 90.2].
+
+=== [T1 R8 password minlen lowered to 8] 2026-10-21T10:16:43Z ===
+Run 8: COMPLETE 
+  FILE-001  NON_COMPLIANT  /etc/shadow mode 0644 is more permissive than 0640
+  FW-001    NON_COMPLIANT  UFW is installed but inactive
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   NON_COMPLIANT  minlen is 8 (required >= 14)
+  SSH-001   NON_COMPLIANT  PermitRootLogin is 'yes' (source: effective (sshd -T))
+  SSH-002   NON_COMPLIANT  password_authentication is 'yes' (source: effective (sshd -T))
+  SVC-001   NON_COMPLIANT  Prohibited service present: vsftpd
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+  DRIFT NEW_NON_COMPLIANCE     MEDIUM   PWD-001 (Password quality and ageing requirements) changed from COMPLIANT to NON_COMPLIANT: minlen is 8 (required >= 14)
+Risk score: 85.92 (PARTIAL, band Critical, bounds 47.26-92.26)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [47.3, 92.3].
+
+=== [T1 R9 pam_faillock account lockout removed] 2026-10-21T10:16:52Z ===
+Run 9: COMPLETE 
+  FILE-001  NON_COMPLIANT  /etc/shadow mode 0644 is more permissive than 0640
+  FW-001    NON_COMPLIANT  UFW is installed but inactive
+  LOCK-001  NON_COMPLIANT  pam_faillock authfail line missing in common-auth; pam_faillock preauth line missing in common-auth
+  PWD-001   NON_COMPLIANT  minlen is 8 (required >= 14)
+  SSH-001   NON_COMPLIANT  PermitRootLogin is 'yes' (source: effective (sshd -T))
+  SSH-002   NON_COMPLIANT  password_authentication is 'yes' (source: effective (sshd -T))
+  SVC-001   NON_COMPLIANT  Prohibited service present: vsftpd
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+  DRIFT NEW_NON_COMPLIANCE     MEDIUM   LOCK-001 (Account lockout after failed logins (pam_faillock)) changed from COMPLIANT to NON_COMPLIANT: pam_faillock auth
+Risk score: 89.59 (PARTIAL, band Critical, bounds 49.27-94.28)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [49.3, 94.3].
+
+=== [T1 R10 unattended security upgrades disabled] 2026-10-21T10:17:01Z ===
+Run 10: COMPLETE 
+  FILE-001  NON_COMPLIANT  /etc/shadow mode 0644 is more permissive than 0640
+  FW-001    NON_COMPLIANT  UFW is installed but inactive
+  LOCK-001  NON_COMPLIANT  pam_faillock authfail line missing in common-auth; pam_faillock preauth line missing in common-auth
+  PWD-001   NON_COMPLIANT  minlen is 8 (required >= 14)
+  SSH-001   NON_COMPLIANT  PermitRootLogin is 'yes' (source: effective (sshd -T))
+  SSH-002   NON_COMPLIANT  password_authentication is 'yes' (source: effective (sshd -T))
+  SVC-001   NON_COMPLIANT  Prohibited service present: vsftpd
+  UPD-001   NON_COMPLIANT  APT::Periodic::Unattended-Upgrade is 0
+  DRIFT NEW_NON_COMPLIANCE     HIGH     UPD-001 (Automatic security updates enabled) changed from COMPLIANT to NON_COMPLIANT: APT::Periodic::Unattended-Upgrade 
+Risk score: 95.45 (PARTIAL, band Critical, bounds 52.5-97.5)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [52.5, 97.5].
+
+=== [T1 R11 remediation - all controls restored] 2026-10-21T10:17:10Z ===
+Run 11: COMPLETE 
+  FILE-001  COMPLIANT      All account database files match the ownership/permission baseline
+  FW-001    COMPLIANT      UFW is active with a restrictive default inbound policy
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   COMPLIANT      Password quality and ageing meet policy
+  SSH-001   COMPLIANT      PermitRootLogin is 'no' via sshd -T
+  SSH-002   COMPLIANT      Password and keyboard-interactive authentication are disabled
+  SVC-001   COMPLIANT      No prohibited services running or enabled
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+  DRIFT CORRECTED              INFO     SSH-001 (SSH root login disabled) was remediated and is now COMPLIANT.
+  DRIFT CORRECTED              INFO     SSH-002 (SSH password authentication disabled) was remediated and is now COMPLIANT.
+  DRIFT CORRECTED              INFO     FW-001 (Host firewall (UFW) active with default-deny inbound) was remediated and is now COMPLIANT.
+  DRIFT CORRECTED              INFO     SVC-001 (No prohibited network services running or enabled) was remediated and is now COMPLIANT.
+  DRIFT CORRECTED              INFO     FILE-001 (Account database file permissions and ownership) was remediated and is now COMPLIANT.
+  DRIFT CORRECTED              INFO     PWD-001 (Password quality and ageing requirements) was remediated and is now COMPLIANT.
+  DRIFT CORRECTED              INFO     LOCK-001 (Account lockout after failed logins (pam_faillock)) was remediated and is now COMPLIANT.
+  DRIFT CORRECTED              INFO     UPD-001 (Automatic security updates enabled) was remediated and is now COMPLIANT.
+Risk score: 13.64 (PARTIAL, band Low, bounds 7.5-52.5)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [7.5, 52.5].
+
+=== [T1 R12 no change after remediation] 2026-10-21T10:17:19Z ===
+Run 12: COMPLETE 
+  FILE-001  COMPLIANT      All account database files match the ownership/permission baseline
+  FW-001    COMPLIANT      UFW is active with a restrictive default inbound policy
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   COMPLIANT      Password quality and ageing meet policy
+  SSH-001   COMPLIANT      PermitRootLogin is 'no' via sshd -T
+  SSH-002   COMPLIANT      Password and keyboard-interactive authentication are disabled
+  SVC-001   COMPLIANT      No prohibited services running or enabled
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+Risk score: 13.64 (PARTIAL, band Low, bounds 7.5-52.5)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [7.5, 52.5].
+
+##### TRIAL 2 of 3 #####
+=== [T2 R1 hardened baseline] 2026-10-21T10:17:31Z ===
+Run 13: COMPLETE 
+  FILE-001  COMPLIANT      All account database files match the ownership/permission baseline
+  FW-001    COMPLIANT      UFW is active with a restrictive default inbound policy
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   COMPLIANT      Password quality and ageing meet policy
+  SSH-001   COMPLIANT      PermitRootLogin is 'no' via sshd -T
+  SSH-002   COMPLIANT      Password and keyboard-interactive authentication are disabled
+  SVC-001   COMPLIANT      No prohibited services running or enabled
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+Risk score: 13.64 (PARTIAL, band Low, bounds 7.5-52.5)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [7.5, 52.5].
+
+=== [T2 R2 no change (stability check - expect no drift)] 2026-10-21T10:17:40Z ===
+Run 14: COMPLETE 
+  FILE-001  COMPLIANT      All account database files match the ownership/permission baseline
+  FW-001    COMPLIANT      UFW is active with a restrictive default inbound policy
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   COMPLIANT      Password quality and ageing meet policy
+  SSH-001   COMPLIANT      PermitRootLogin is 'no' via sshd -T
+  SSH-002   COMPLIANT      Password and keyboard-interactive authentication are disabled
+  SVC-001   COMPLIANT      No prohibited services running or enabled
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+Risk score: 13.64 (PARTIAL, band Low, bounds 7.5-52.5)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [7.5, 52.5].
+
+=== [T2 R3 PermitRootLogin changed to yes] 2026-10-21T10:17:48Z ===
+Run 15: COMPLETE 
+  FILE-001  COMPLIANT      All account database files match the ownership/permission baseline
+  FW-001    COMPLIANT      UFW is active with a restrictive default inbound policy
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   COMPLIANT      Password quality and ageing meet policy
+  SSH-001   NON_COMPLIANT  PermitRootLogin is 'yes' (source: effective (sshd -T))
+  SSH-002   COMPLIANT      Password and keyboard-interactive authentication are disabled
+  SVC-001   COMPLIANT      No prohibited services running or enabled
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+  DRIFT NEW_NON_COMPLIANCE     CRITICAL SSH-001 (SSH root login disabled) changed from COMPLIANT to NON_COMPLIANT: PermitRootLogin is 'yes' (source: effective (
+Risk score: 35.51 (PARTIAL, band Medium, bounds 19.53-64.53)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [19.5, 64.5].
+
+=== [T2 R4 UFW firewall disabled] 2026-10-21T10:17:58Z ===
+Run 16: COMPLETE 
+  FILE-001  COMPLIANT      All account database files match the ownership/permission baseline
+  FW-001    NON_COMPLIANT  UFW is installed but inactive
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   COMPLIANT      Password quality and ageing meet policy
+  SSH-001   NON_COMPLIANT  PermitRootLogin is 'yes' (source: effective (sshd -T))
+  SSH-002   COMPLIANT      Password and keyboard-interactive authentication are disabled
+  SVC-001   COMPLIANT      No prohibited services running or enabled
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+  DRIFT NEW_NON_COMPLIANCE     CRITICAL FW-001 (Host firewall (UFW) active with default-deny inbound) changed from COMPLIANT to NON_COMPLIANT: UFW is installed 
+Risk score: 57.39 (PARTIAL, band High, bounds 31.56-76.56)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [31.6, 76.6].
+
+=== [T2 R5 prohibited service vsftpd started] 2026-10-21T10:18:08Z ===
+Run 17: COMPLETE 
+  FILE-001  COMPLIANT      All account database files match the ownership/permission baseline
+  FW-001    NON_COMPLIANT  UFW is installed but inactive
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   COMPLIANT      Password quality and ageing meet policy
+  SSH-001   NON_COMPLIANT  PermitRootLogin is 'yes' (source: effective (sshd -T))
+  SSH-002   COMPLIANT      Password and keyboard-interactive authentication are disabled
+  SVC-001   NON_COMPLIANT  Prohibited service present: vsftpd
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+  DRIFT NEW_NON_COMPLIANCE     HIGH     SVC-001 (No prohibited network services running or enabled) changed from COMPLIANT to NON_COMPLIANT: Prohibited service 
+Risk score: 69.06 (PARTIAL, band High, bounds 37.98-82.98)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [38.0, 83.0].
+
+=== [T2 R6 /etc/shadow made world-readable (0644)] 2026-10-21T10:18:16Z ===
+Run 18: COMPLETE 
+  FILE-001  NON_COMPLIANT  /etc/shadow mode 0644 is more permissive than 0640
+  FW-001    NON_COMPLIANT  UFW is installed but inactive
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   COMPLIANT      Password quality and ageing meet policy
+  SSH-001   NON_COMPLIANT  PermitRootLogin is 'yes' (source: effective (sshd -T))
+  SSH-002   COMPLIANT      Password and keyboard-interactive authentication are disabled
+  SVC-001   NON_COMPLIANT  Prohibited service present: vsftpd
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+  DRIFT NEW_NON_COMPLIANCE     CRITICAL FILE-001 (Account database file permissions and ownership) changed from COMPLIANT to NON_COMPLIANT: /etc/shadow mode 064
+Risk score: 75.66 (PARTIAL, band Critical, bounds 41.61-86.61)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [41.6, 86.6].
+
+=== [T2 R7 SSH password authentication enabled] 2026-10-21T10:18:25Z ===
+Run 19: COMPLETE 
+  FILE-001  NON_COMPLIANT  /etc/shadow mode 0644 is more permissive than 0640
+  FW-001    NON_COMPLIANT  UFW is installed but inactive
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   COMPLIANT      Password quality and ageing meet policy
+  SSH-001   NON_COMPLIANT  PermitRootLogin is 'yes' (source: effective (sshd -T))
+  SSH-002   NON_COMPLIANT  password_authentication is 'yes' (source: effective (sshd -T))
+  SVC-001   NON_COMPLIANT  Prohibited service present: vsftpd
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+  DRIFT NEW_NON_COMPLIANCE     HIGH     SSH-002 (SSH password authentication disabled) changed from COMPLIANT to NON_COMPLIANT: password_authentication is 'yes'
+Risk score: 82.26 (PARTIAL, band Critical, bounds 45.24-90.24)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [45.2, 90.2].
+
+=== [T2 R8 password minlen lowered to 8] 2026-10-21T10:18:34Z ===
+Run 20: COMPLETE 
+  FILE-001  NON_COMPLIANT  /etc/shadow mode 0644 is more permissive than 0640
+  FW-001    NON_COMPLIANT  UFW is installed but inactive
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   NON_COMPLIANT  minlen is 8 (required >= 14)
+  SSH-001   NON_COMPLIANT  PermitRootLogin is 'yes' (source: effective (sshd -T))
+  SSH-002   NON_COMPLIANT  password_authentication is 'yes' (source: effective (sshd -T))
+  SVC-001   NON_COMPLIANT  Prohibited service present: vsftpd
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+  DRIFT NEW_NON_COMPLIANCE     MEDIUM   PWD-001 (Password quality and ageing requirements) changed from COMPLIANT to NON_COMPLIANT: minlen is 8 (required >= 14)
+Risk score: 85.92 (PARTIAL, band Critical, bounds 47.26-92.26)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [47.3, 92.3].
+
+=== [T2 R9 pam_faillock account lockout removed] 2026-10-21T10:18:42Z ===
+Run 21: COMPLETE 
+  FILE-001  NON_COMPLIANT  /etc/shadow mode 0644 is more permissive than 0640
+  FW-001    NON_COMPLIANT  UFW is installed but inactive
+  LOCK-001  NON_COMPLIANT  pam_faillock authfail line missing in common-auth; pam_faillock preauth line missing in common-auth
+  PWD-001   NON_COMPLIANT  minlen is 8 (required >= 14)
+  SSH-001   NON_COMPLIANT  PermitRootLogin is 'yes' (source: effective (sshd -T))
+  SSH-002   NON_COMPLIANT  password_authentication is 'yes' (source: effective (sshd -T))
+  SVC-001   NON_COMPLIANT  Prohibited service present: vsftpd
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+  DRIFT NEW_NON_COMPLIANCE     MEDIUM   LOCK-001 (Account lockout after failed logins (pam_faillock)) changed from COMPLIANT to NON_COMPLIANT: pam_faillock auth
+Risk score: 89.59 (PARTIAL, band Critical, bounds 49.27-94.28)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [49.3, 94.3].
+
+=== [T2 R10 unattended security upgrades disabled] 2026-10-21T10:18:51Z ===
+Run 22: COMPLETE 
+  FILE-001  NON_COMPLIANT  /etc/shadow mode 0644 is more permissive than 0640
+  FW-001    NON_COMPLIANT  UFW is installed but inactive
+  LOCK-001  NON_COMPLIANT  pam_faillock authfail line missing in common-auth; pam_faillock preauth line missing in common-auth
+  PWD-001   NON_COMPLIANT  minlen is 8 (required >= 14)
+  SSH-001   NON_COMPLIANT  PermitRootLogin is 'yes' (source: effective (sshd -T))
+  SSH-002   NON_COMPLIANT  password_authentication is 'yes' (source: effective (sshd -T))
+  SVC-001   NON_COMPLIANT  Prohibited service present: vsftpd
+  UPD-001   NON_COMPLIANT  APT::Periodic::Unattended-Upgrade is 0
+  DRIFT NEW_NON_COMPLIANCE     HIGH     UPD-001 (Automatic security updates enabled) changed from COMPLIANT to NON_COMPLIANT: APT::Periodic::Unattended-Upgrade 
+Risk score: 95.45 (PARTIAL, band Critical, bounds 52.5-97.5)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [52.5, 97.5].
+
+=== [T2 R11 remediation - all controls restored] 2026-10-21T10:19:00Z ===
+Run 23: COMPLETE 
+  FILE-001  COMPLIANT      All account database files match the ownership/permission baseline
+  FW-001    COMPLIANT      UFW is active with a restrictive default inbound policy
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   COMPLIANT      Password quality and ageing meet policy
+  SSH-001   COMPLIANT      PermitRootLogin is 'no' via sshd -T
+  SSH-002   COMPLIANT      Password and keyboard-interactive authentication are disabled
+  SVC-001   COMPLIANT      No prohibited services running or enabled
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+  DRIFT CORRECTED              INFO     SSH-001 (SSH root login disabled) was remediated and is now COMPLIANT.
+  DRIFT CORRECTED              INFO     SSH-002 (SSH password authentication disabled) was remediated and is now COMPLIANT.
+  DRIFT CORRECTED              INFO     FW-001 (Host firewall (UFW) active with default-deny inbound) was remediated and is now COMPLIANT.
+  DRIFT CORRECTED              INFO     SVC-001 (No prohibited network services running or enabled) was remediated and is now COMPLIANT.
+  DRIFT CORRECTED              INFO     FILE-001 (Account database file permissions and ownership) was remediated and is now COMPLIANT.
+  DRIFT CORRECTED              INFO     PWD-001 (Password quality and ageing requirements) was remediated and is now COMPLIANT.
+  DRIFT CORRECTED              INFO     LOCK-001 (Account lockout after failed logins (pam_faillock)) was remediated and is now COMPLIANT.
+  DRIFT CORRECTED              INFO     UPD-001 (Automatic security updates enabled) was remediated and is now COMPLIANT.
+Risk score: 13.64 (PARTIAL, band Low, bounds 7.5-52.5)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [7.5, 52.5].
+
+=== [T2 R12 no change after remediation] 2026-10-21T10:19:09Z ===
+Run 24: COMPLETE 
+  FILE-001  COMPLIANT      All account database files match the ownership/permission baseline
+  FW-001    COMPLIANT      UFW is active with a restrictive default inbound policy
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   COMPLIANT      Password quality and ageing meet policy
+  SSH-001   COMPLIANT      PermitRootLogin is 'no' via sshd -T
+  SSH-002   COMPLIANT      Password and keyboard-interactive authentication are disabled
+  SVC-001   COMPLIANT      No prohibited services running or enabled
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+Risk score: 13.64 (PARTIAL, band Low, bounds 7.5-52.5)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [7.5, 52.5].
+
+##### TRIAL 3 of 3 #####
+=== [T3 R1 hardened baseline] 2026-10-21T10:19:21Z ===
+Run 25: COMPLETE 
+  FILE-001  COMPLIANT      All account database files match the ownership/permission baseline
+  FW-001    COMPLIANT      UFW is active with a restrictive default inbound policy
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   COMPLIANT      Password quality and ageing meet policy
+  SSH-001   COMPLIANT      PermitRootLogin is 'no' via sshd -T
+  SSH-002   COMPLIANT      Password and keyboard-interactive authentication are disabled
+  SVC-001   COMPLIANT      No prohibited services running or enabled
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+Risk score: 13.64 (PARTIAL, band Low, bounds 7.5-52.5)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [7.5, 52.5].
+
+=== [T3 R2 no change (stability check - expect no drift)] 2026-10-21T10:19:30Z ===
+Run 26: COMPLETE 
+  FILE-001  COMPLIANT      All account database files match the ownership/permission baseline
+  FW-001    COMPLIANT      UFW is active with a restrictive default inbound policy
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   COMPLIANT      Password quality and ageing meet policy
+  SSH-001   COMPLIANT      PermitRootLogin is 'no' via sshd -T
+  SSH-002   COMPLIANT      Password and keyboard-interactive authentication are disabled
+  SVC-001   COMPLIANT      No prohibited services running or enabled
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+Risk score: 13.64 (PARTIAL, band Low, bounds 7.5-52.5)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [7.5, 52.5].
+
+=== [T3 R3 PermitRootLogin changed to yes] 2026-10-21T10:19:38Z ===
+Run 27: COMPLETE 
+  FILE-001  COMPLIANT      All account database files match the ownership/permission baseline
+  FW-001    COMPLIANT      UFW is active with a restrictive default inbound policy
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   COMPLIANT      Password quality and ageing meet policy
+  SSH-001   NON_COMPLIANT  PermitRootLogin is 'yes' (source: effective (sshd -T))
+  SSH-002   COMPLIANT      Password and keyboard-interactive authentication are disabled
+  SVC-001   COMPLIANT      No prohibited services running or enabled
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+  DRIFT NEW_NON_COMPLIANCE     CRITICAL SSH-001 (SSH root login disabled) changed from COMPLIANT to NON_COMPLIANT: PermitRootLogin is 'yes' (source: effective (
+Risk score: 35.51 (PARTIAL, band Medium, bounds 19.53-64.53)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [19.5, 64.5].
+
+=== [T3 R4 UFW firewall disabled] 2026-10-21T10:19:48Z ===
+Run 28: COMPLETE 
+  FILE-001  COMPLIANT      All account database files match the ownership/permission baseline
+  FW-001    NON_COMPLIANT  UFW is installed but inactive
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   COMPLIANT      Password quality and ageing meet policy
+  SSH-001   NON_COMPLIANT  PermitRootLogin is 'yes' (source: effective (sshd -T))
+  SSH-002   COMPLIANT      Password and keyboard-interactive authentication are disabled
+  SVC-001   COMPLIANT      No prohibited services running or enabled
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+  DRIFT NEW_NON_COMPLIANCE     CRITICAL FW-001 (Host firewall (UFW) active with default-deny inbound) changed from COMPLIANT to NON_COMPLIANT: UFW is installed 
+Risk score: 57.39 (PARTIAL, band High, bounds 31.56-76.56)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [31.6, 76.6].
+
+=== [T3 R5 prohibited service vsftpd started] 2026-10-21T10:19:58Z ===
+Run 29: COMPLETE 
+  FILE-001  COMPLIANT      All account database files match the ownership/permission baseline
+  FW-001    NON_COMPLIANT  UFW is installed but inactive
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   COMPLIANT      Password quality and ageing meet policy
+  SSH-001   NON_COMPLIANT  PermitRootLogin is 'yes' (source: effective (sshd -T))
+  SSH-002   COMPLIANT      Password and keyboard-interactive authentication are disabled
+  SVC-001   NON_COMPLIANT  Prohibited service present: vsftpd
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+  DRIFT NEW_NON_COMPLIANCE     HIGH     SVC-001 (No prohibited network services running or enabled) changed from COMPLIANT to NON_COMPLIANT: Prohibited service 
+Risk score: 69.06 (PARTIAL, band High, bounds 37.98-82.98)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [38.0, 83.0].
+
+=== [T3 R6 /etc/shadow made world-readable (0644)] 2026-10-21T10:20:06Z ===
+Run 30: COMPLETE 
+  FILE-001  NON_COMPLIANT  /etc/shadow mode 0644 is more permissive than 0640
+  FW-001    NON_COMPLIANT  UFW is installed but inactive
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   COMPLIANT      Password quality and ageing meet policy
+  SSH-001   NON_COMPLIANT  PermitRootLogin is 'yes' (source: effective (sshd -T))
+  SSH-002   COMPLIANT      Password and keyboard-interactive authentication are disabled
+  SVC-001   NON_COMPLIANT  Prohibited service present: vsftpd
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+  DRIFT NEW_NON_COMPLIANCE     CRITICAL FILE-001 (Account database file permissions and ownership) changed from COMPLIANT to NON_COMPLIANT: /etc/shadow mode 064
+Risk score: 75.66 (PARTIAL, band Critical, bounds 41.61-86.61)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [41.6, 86.6].
+
+=== [T3 R7 SSH password authentication enabled] 2026-10-21T10:20:15Z ===
+Run 31: COMPLETE 
+  FILE-001  NON_COMPLIANT  /etc/shadow mode 0644 is more permissive than 0640
+  FW-001    NON_COMPLIANT  UFW is installed but inactive
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   COMPLIANT      Password quality and ageing meet policy
+  SSH-001   NON_COMPLIANT  PermitRootLogin is 'yes' (source: effective (sshd -T))
+  SSH-002   NON_COMPLIANT  password_authentication is 'yes' (source: effective (sshd -T))
+  SVC-001   NON_COMPLIANT  Prohibited service present: vsftpd
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+  DRIFT NEW_NON_COMPLIANCE     HIGH     SSH-002 (SSH password authentication disabled) changed from COMPLIANT to NON_COMPLIANT: password_authentication is 'yes'
+Risk score: 82.26 (PARTIAL, band Critical, bounds 45.24-90.24)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [45.2, 90.2].
+
+=== [T3 R8 password minlen lowered to 8] 2026-10-21T10:20:23Z ===
+Run 32: COMPLETE 
+  FILE-001  NON_COMPLIANT  /etc/shadow mode 0644 is more permissive than 0640
+  FW-001    NON_COMPLIANT  UFW is installed but inactive
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   NON_COMPLIANT  minlen is 8 (required >= 14)
+  SSH-001   NON_COMPLIANT  PermitRootLogin is 'yes' (source: effective (sshd -T))
+  SSH-002   NON_COMPLIANT  password_authentication is 'yes' (source: effective (sshd -T))
+  SVC-001   NON_COMPLIANT  Prohibited service present: vsftpd
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+  DRIFT NEW_NON_COMPLIANCE     MEDIUM   PWD-001 (Password quality and ageing requirements) changed from COMPLIANT to NON_COMPLIANT: minlen is 8 (required >= 14)
+Risk score: 85.92 (PARTIAL, band Critical, bounds 47.26-92.26)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [47.3, 92.3].
+
+=== [T3 R9 pam_faillock account lockout removed] 2026-10-21T10:20:32Z ===
+Run 33: COMPLETE 
+  FILE-001  NON_COMPLIANT  /etc/shadow mode 0644 is more permissive than 0640
+  FW-001    NON_COMPLIANT  UFW is installed but inactive
+  LOCK-001  NON_COMPLIANT  pam_faillock authfail line missing in common-auth; pam_faillock preauth line missing in common-auth
+  PWD-001   NON_COMPLIANT  minlen is 8 (required >= 14)
+  SSH-001   NON_COMPLIANT  PermitRootLogin is 'yes' (source: effective (sshd -T))
+  SSH-002   NON_COMPLIANT  password_authentication is 'yes' (source: effective (sshd -T))
+  SVC-001   NON_COMPLIANT  Prohibited service present: vsftpd
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+  DRIFT NEW_NON_COMPLIANCE     MEDIUM   LOCK-001 (Account lockout after failed logins (pam_faillock)) changed from COMPLIANT to NON_COMPLIANT: pam_faillock auth
+Risk score: 89.59 (PARTIAL, band Critical, bounds 49.27-94.28)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [49.3, 94.3].
+
+=== [T3 R10 unattended security upgrades disabled] 2026-10-21T10:20:41Z ===
+Run 34: COMPLETE 
+  FILE-001  NON_COMPLIANT  /etc/shadow mode 0644 is more permissive than 0640
+  FW-001    NON_COMPLIANT  UFW is installed but inactive
+  LOCK-001  NON_COMPLIANT  pam_faillock authfail line missing in common-auth; pam_faillock preauth line missing in common-auth
+  PWD-001   NON_COMPLIANT  minlen is 8 (required >= 14)
+  SSH-001   NON_COMPLIANT  PermitRootLogin is 'yes' (source: effective (sshd -T))
+  SSH-002   NON_COMPLIANT  password_authentication is 'yes' (source: effective (sshd -T))
+  SVC-001   NON_COMPLIANT  Prohibited service present: vsftpd
+  UPD-001   NON_COMPLIANT  APT::Periodic::Unattended-Upgrade is 0
+  DRIFT NEW_NON_COMPLIANCE     HIGH     UPD-001 (Automatic security updates enabled) changed from COMPLIANT to NON_COMPLIANT: APT::Periodic::Unattended-Upgrade 
+Risk score: 95.45 (PARTIAL, band Critical, bounds 52.5-97.5)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [52.5, 97.5].
+
+=== [T3 R11 remediation - all controls restored] 2026-10-21T10:20:50Z ===
+Run 35: COMPLETE 
+  FILE-001  COMPLIANT      All account database files match the ownership/permission baseline
+  FW-001    COMPLIANT      UFW is active with a restrictive default inbound policy
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   COMPLIANT      Password quality and ageing meet policy
+  SSH-001   COMPLIANT      PermitRootLogin is 'no' via sshd -T
+  SSH-002   COMPLIANT      Password and keyboard-interactive authentication are disabled
+  SVC-001   COMPLIANT      No prohibited services running or enabled
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+  DRIFT CORRECTED              INFO     SSH-001 (SSH root login disabled) was remediated and is now COMPLIANT.
+  DRIFT CORRECTED              INFO     SSH-002 (SSH password authentication disabled) was remediated and is now COMPLIANT.
+  DRIFT CORRECTED              INFO     FW-001 (Host firewall (UFW) active with default-deny inbound) was remediated and is now COMPLIANT.
+  DRIFT CORRECTED              INFO     SVC-001 (No prohibited network services running or enabled) was remediated and is now COMPLIANT.
+  DRIFT CORRECTED              INFO     FILE-001 (Account database file permissions and ownership) was remediated and is now COMPLIANT.
+  DRIFT CORRECTED              INFO     PWD-001 (Password quality and ageing requirements) was remediated and is now COMPLIANT.
+  DRIFT CORRECTED              INFO     LOCK-001 (Account lockout after failed logins (pam_faillock)) was remediated and is now COMPLIANT.
+  DRIFT CORRECTED              INFO     UPD-001 (Automatic security updates enabled) was remediated and is now COMPLIANT.
+Risk score: 13.64 (PARTIAL, band Low, bounds 7.5-52.5)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [7.5, 52.5].
+
+=== [T3 R12 no change after remediation] 2026-10-21T10:20:59Z ===
+Run 36: COMPLETE 
+  FILE-001  COMPLIANT      All account database files match the ownership/permission baseline
+  FW-001    COMPLIANT      UFW is active with a restrictive default inbound policy
+  LOCK-001  COMPLIANT      Account lockout configured within policy limits
+  PWD-001   COMPLIANT      Password quality and ageing meet policy
+  SSH-001   COMPLIANT      PermitRootLogin is 'no' via sshd -T
+  SSH-002   COMPLIANT      Password and keyboard-interactive authentication are disabled
+  SVC-001   COMPLIANT      No prohibited services running or enabled
+  UPD-001   COMPLIANT      Automatic security updates are configured and scheduled
+Risk score: 13.64 (PARTIAL, band Low, bounds 7.5-52.5)
+  ! No vulnerability scan imported: vulnerability risk is unknown (not zero).
+  ! Score renormalised over available components CDA; true value lies within [7.5, 52.5].
+
