@@ -1,6 +1,6 @@
 # Continuous Compliance Monitoring and Risk Drift Detection Framework for Proactive Cybersecurity Governance
 
-M.Tech Cyber Security dissertation project. A local, zero-cost framework that:
+A local, zero-cost framework that:
 
 1. collects Linux (Ubuntu) security-configuration evidence, read-only;
 2. evaluates eight controls with **Open Policy Agent / Rego**;
@@ -86,7 +86,7 @@ python cli.py --db data/demo_synthetic.sqlite3 build-site   # SYNTHETIC demo con
 `docs/index.html` is one self-contained file (no server, no internet needed): Mission Control,
 Compliance Monitoring, Configuration Drift, Vulnerability Intake, Risk Prioritisation, Risk Drift,
 Explanations, Scenario Evaluation, Baseline Comparison, History & Data Quality — dark/light theme,
-mobile layout. Edit `config/project_meta.json` (name, enrolment, guide) before building.
+mobile layout. Header text comes from `config/project_meta.json`.
 
 **Publish it free with GitHub Pages:** push the project to GitHub → repository *Settings → Pages* →
 *Source: Deploy from a branch* → branch `main`, folder `/docs` → Save. After a minute the console is live at
@@ -229,6 +229,6 @@ missing for the real lab data and those scores are PARTIAL); multi-week continuo
 | Baseline comparison (CVSS-only vs compliance-only vs proposed) | SYNTHETIC 6-asset portfolio | `evaluation/results/baseline_comparison.*` |
 | Dashboard showcase DB | both, every row labelled HOST / SYNTHETIC | `data/showcase.sqlite3` |
 
-Do not report any experimental result in the dissertation that you have not reproduced yourself.
+Do not report any experimental result that you have not reproduced yourself.
 See [docs/ACCEPTANCE_CHECKLIST.md](docs/ACCEPTANCE_CHECKLIST.md), [docs/EVALUATION.md](docs/EVALUATION.md)
 and `paper_figures/FIGURE_LIST.md`.

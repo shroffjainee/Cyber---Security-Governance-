@@ -108,7 +108,7 @@ Dashboard me har row pe `HOST` (asli) ya `SYNTHETIC` likha aata hai. Paper me bh
 **Limitations (paper me zaroor likhna):**
 1. Lab host ek Ubuntu 24.04 container tha (systemd PID 1 nahi) — services `/proc` se padhi gayi.
 2. Asli Greenbone scan nahi tha, isliye real data pe V missing hai → score PARTIAL.
-3. Final dissertation ke liye yahi experiment full Ubuntu VM pe chala lena best rahega.
+3. Final results ke liye yahi experiment full Ubuntu VM pe chala lena best rahega.
 
 ---
 
@@ -122,7 +122,7 @@ Demo dekhne ke liye: `RDF_DB=data/showcase.sqlite3 streamlit run app.py`
 
 ---
 
-## 7. Viva me puchhe jaane wale sawaal (short jawab)
+## 7. Common sawaal (short jawab)
 
 * **Drift kaise detect hota hai?** Har run ka evidence normalize karke (timestamp, order, whitespace hata ke)
   pichhle run se compare hota hai; status COMPLIANT → NON_COMPLIANT ho to NEW_NON_COMPLIANCE.
