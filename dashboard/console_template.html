@@ -1,0 +1,627 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Risk Drift Monitor</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Continuous Compliance Monitoring and Risk Drift Detection Framework for Proactive Cybersecurity Governance — compliance checks, configuration drift, vulnerability intake and explainable risk drift.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230B1110'/%3E%3Cpath d='M4 19h5l3-9 4 14 3-8 2 3h7' fill='none' stroke='%23F2A93B' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: masthead band (title + posture dial) over a live drift recorder on graph paper → signal chain → sticky instrument rail → stage sections of readouts + ledger panels.
+   Theme: "drift observatory" — dark control room (default) and daylight audit paper, same tokens. */
+:root{
+ --bg:#0A100F;--bg2:#0F1716;--panel:#121C1B;--panel2:#172322;--line:#22312E;--line2:#304440;
+ --ink:#E9F0ED;--mute:#93A7A0;--mute2:#62766F;
+ --amber:#F2A93B;--blue:#73A7FF;--paperGrid:rgba(115,167,255,.07);--paperGrid2:rgba(115,167,255,.14);
+ --ok:#3CCB7F;--warn:#E9B949;--bad:#F2575A;--unk:#B3A5F2;--err:#EE77BC;--hi:#F28A4B;
+ --c1:#73A7FF;--c2:#F2A93B;--c3:#3CCFC0;--c4:#EE77BC;--c5:#B3A5F2;--c6:#A5D86E;--c7:#F28A4B;
+ --shadow:0 18px 50px -24px rgba(0,0,0,.7);--glowA:rgba(242,169,59,.22);
+ --display:"Archivo","Arial Narrow",system-ui,sans-serif;--sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+ --mono:"IBM Plex Mono",ui-monospace,"Cascadia Code",Consolas,monospace;color-scheme:dark}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
+ --bg:#EEF1EC;--bg2:#E5EAE4;--panel:#FBFCFA;--panel2:#F2F5F1;--line:#D5DDD5;--line2:#BCC8BE;
+ --ink:#13201B;--mute:#55665F;--mute2:#7F9089;
+ --amber:#B4690E;--blue:#2453B8;--paperGrid:rgba(36,83,184,.07);--paperGrid2:rgba(36,83,184,.15);
+ --ok:#13834C;--warn:#A06A00;--bad:#C42B2E;--unk:#6556B8;--err:#A8346F;--hi:#C2560F;
+ --c1:#2453B8;--c2:#B4690E;--c3:#0E7C70;--c4:#A8346F;--c5:#6556B8;--c6:#4E7F16;--c7:#C2560F;
+ --shadow:0 14px 34px -22px rgba(20,40,30,.35);--glowA:rgba(180,105,14,.16);color-scheme:light}}
+:root[data-theme="light"]{
+ --bg:#EEF1EC;--bg2:#E5EAE4;--panel:#FBFCFA;--panel2:#F2F5F1;--line:#D5DDD5;--line2:#BCC8BE;
+ --ink:#13201B;--mute:#55665F;--mute2:#7F9089;
+ --amber:#B4690E;--blue:#2453B8;--paperGrid:rgba(36,83,184,.07);--paperGrid2:rgba(36,83,184,.15);
+ --ok:#13834C;--warn:#A06A00;--bad:#C42B2E;--unk:#6556B8;--err:#A8346F;--hi:#C2560F;
+ --c1:#2453B8;--c2:#B4690E;--c3:#0E7C70;--c4:#A8346F;--c5:#6556B8;--c6:#4E7F16;--c7:#C2560F;
+ --shadow:0 14px 34px -22px rgba(20,40,30,.35);--glowA:rgba(180,105,14,.16);color-scheme:light}
+:root[data-theme="dark"]{
+ --bg:#0A100F;--bg2:#0F1716;--panel:#121C1B;--panel2:#172322;--line:#22312E;--line2:#304440;
+ --ink:#E9F0ED;--mute:#93A7A0;--mute2:#62766F;
+ --amber:#F2A93B;--blue:#73A7FF;--paperGrid:rgba(115,167,255,.07);--paperGrid2:rgba(115,167,255,.14);
+ --ok:#3CCB7F;--warn:#E9B949;--bad:#F2575A;--unk:#B3A5F2;--err:#EE77BC;--hi:#F28A4B;
+ --c1:#73A7FF;--c2:#F2A93B;--c3:#3CCFC0;--c4:#EE77BC;--c5:#B3A5F2;--c6:#A5D86E;--c7:#F28A4B;
+ --shadow:0 18px 50px -24px rgba(0,0,0,.7);--glowA:rgba(242,169,59,.22);color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--bg2)}
+a{color:var(--blue);text-decoration:none}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--amber);outline-offset:2px;border-radius:4px}
+.gut{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1320px;margin:0 auto}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.cap{font:600 11px/1.3 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+
+/* ---------- masthead */
+.mast{position:relative;overflow:hidden;border-bottom:1px solid var(--line);
+ background:radial-gradient(900px 340px at 85% -10%,var(--glowA),transparent 70%),
+ linear-gradient(var(--paperGrid) 1px,transparent 1px) 0 0/16px 16px,linear-gradient(90deg,var(--paperGrid) 1px,transparent 1px) 0 0/16px 16px,
+ linear-gradient(var(--paperGrid2) 1px,transparent 1px) 0 0/80px 80px,linear-gradient(90deg,var(--paperGrid2) 1px,transparent 1px) 0 0/80px 80px,var(--bg2)}
+.bar{display:flex;align-items:center;gap:14px;padding-block:14px}
+.logo{display:flex;align-items:center;gap:11px}
+.logo b{font:800 17px/1 var(--display);font-stretch:118%;letter-spacing:.02em}
+.logo small{display:block;white-space:nowrap;font:500 10.5px/1.4 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--mute);margin-top:3px}
+.bar .sp{flex:1}
+.stamp{display:inline-flex;align-items:center;gap:6px;font:600 10.5px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--sc,var(--mute));
+ border:1.5px solid var(--sc,var(--line2));border-radius:3px;padding:5px 7px;white-space:nowrap;background:color-mix(in srgb,var(--sc,transparent) 9%,transparent)}
+.stamp.rot{transform:rotate(-2.5deg)}
+.led{width:7px;height:7px;border-radius:50%;background:var(--sc,var(--ok));box-shadow:0 0 8px var(--sc,var(--ok));animation:blink 1.8s ease-in-out infinite}
+@keyframes blink{50%{opacity:.35}}
+.tbtn{display:inline-flex;align-items:center;gap:7px;cursor:pointer;background:var(--panel);border:1px solid var(--line2);border-radius:999px;padding:6px 11px;font:500 12px var(--mono);color:var(--ink)}
+.tbtn:hover{border-color:var(--amber)}
+.hero{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:28px;align-items:center;padding-block:18px 8px}
+.hero .cap{color:var(--amber)}
+.hero h1{font:800 clamp(28px,3.6vw,46px)/1.04 var(--display);font-stretch:112%;letter-spacing:-.012em;margin:10px 0 14px;text-wrap:balance}
+.hero h1 .hl{color:var(--amber)}
+.hero h1 .hb{color:var(--blue)}
+.by{color:var(--mute);font-size:14px;max-width:70ch}
+.by b{color:var(--ink);font-weight:600}
+.dial{background:color-mix(in srgb,var(--panel) 82%,transparent);border:1px solid var(--line);border-radius:14px;padding:16px 18px 14px;box-shadow:var(--shadow);backdrop-filter:blur(6px)}
+.dial svg+.row{margin-top:6px}.dial .row{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--mute);padding:7px 0;border-top:1px dashed var(--line)}
+.dial .row b{font:600 12.5px var(--mono);color:var(--ink)}
+.rec{margin-top:14px;border:1px solid var(--line);border-radius:12px;background:color-mix(in srgb,var(--bg) 55%,transparent);overflow:hidden}
+.rec .hd{display:flex;align-items:center;gap:12px;padding:9px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.rec .hd .cap{color:var(--ink)}
+.rec .cw svg{display:block;width:100%;height:auto}
+.trace{fill:none;stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round;stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:draw 2.4s cubic-bezier(.3,.7,.2,1) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.sweep{animation:sweep 5.5s linear infinite}
+@keyframes sweep{from{transform:translateX(0)}to{transform:translateX(var(--sw))}}
+.chain{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;padding-block:16px 20px}
+.mod{position:relative;border:1px solid var(--line);border-radius:10px;padding:11px 12px 11px 14px;background:var(--panel);overflow:hidden}
+.mod:before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--mc)}
+.mod .n{font:600 10.5px var(--mono);letter-spacing:.14em;color:var(--mc)}
+.mod b{display:block;font:700 14px/1.2 var(--display);font-stretch:108%;margin:3px 0 2px}
+.mod span{font-size:12px;color:var(--mute)}
+.mod i{position:absolute;right:11px;top:12px;width:6px;height:6px;border-radius:50%;background:var(--mc);box-shadow:0 0 7px var(--mc)}
+
+/* ---------- rail */
+.rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.rail .in{display:flex;align-items:stretch;gap:2px;overflow-x:auto;scrollbar-width:none}
+.rail .in::-webkit-scrollbar{display:none}
+.rail .g{display:flex;align-items:center;gap:2px;padding-right:10px;margin-right:8px;border-right:1px solid var(--line)}
+.rail .g:last-child{border:0}
+.rail .gl{font:600 9.5px var(--mono);letter-spacing:.16em;color:var(--mute2);text-transform:uppercase;writing-mode:vertical-rl;transform:rotate(180deg);padding:0 6px 0 2px}
+.rail a{display:flex;align-items:center;gap:7px;padding:13px 11px 11px;color:var(--mute);font:500 13px var(--sans);white-space:nowrap;border-bottom:2.5px solid transparent}
+.rail a svg{flex:none;opacity:.8}
+.rail a:hover{color:var(--ink)}
+.rail a.on{color:var(--ink);border-bottom-color:var(--amber)}
+.rail a.on svg{color:var(--amber);opacity:1}
+
+/* ---------- sections */
+main{padding-block:26px 70px}
+section{animation:rise .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes rise{from{opacity:.4;transform:translateY(8px)}to{opacity:1;transform:none}}
+.sh{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:end;margin-bottom:18px}
+.sh .cap{color:var(--amber)}
+.sh h2{font:800 clamp(22px,2.4vw,30px)/1.1 var(--display);font-stretch:110%;margin:6px 0 6px;letter-spacing:-.005em;text-wrap:balance}
+.sh p{margin:0;color:var(--mute);max-width:80ch;font-size:14px}
+.pick{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line2);border-radius:10px;padding:6px 6px 6px 12px}
+.pick select{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:6px 8px;font:500 13px var(--mono);max-width:52vw}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g32{grid-template-columns:minmax(0,3fr) minmax(0,2fr)}.g23{grid-template-columns:minmax(0,2fr) minmax(0,3fr)}
+.mt{margin-top:16px}
+.pnl{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;box-shadow:var(--shadow);min-width:0}
+.pnl>h3{display:flex;align-items:center;gap:9px;margin:0 0 14px;font:700 13.5px/1.2 var(--display);font-stretch:110%;letter-spacing:.02em;text-transform:uppercase}
+.pnl>h3 .cap{margin-left:auto;text-transform:none;letter-spacing:.04em;font-weight:500;font-size:11px}
+.pnl>h3 svg{color:var(--amber);flex:none}
+.ro{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--line);border-radius:12px;background:var(--panel);overflow:hidden;box-shadow:var(--shadow)}
+.ro>div{position:relative;padding:15px 18px 14px;border-right:1px solid var(--line);min-width:0}
+.ro>div:last-child{border-right:0}
+.ro .cap{display:flex;align-items:center;gap:7px}
+.ro .cap i{width:8px;height:8px;border-radius:2px;background:var(--rc);flex:none}
+.ro .v{font:600 30px/1.1 var(--mono);color:var(--rc,var(--ink));margin:8px 0 3px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.ro .s{font-size:12px;color:var(--mute)}
+.ro .m{height:4px;border-radius:2px;background:var(--line);margin-top:10px;overflow:hidden}
+.ro .m i{display:block;height:100%;background:var(--rc);width:0;transition:width 1.1s cubic-bezier(.2,.8,.2,1)}
+.tw{overflow:auto;border:1px solid var(--line);border-radius:10px;max-height:560px}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+th{text-align:left;font:600 10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--mute);padding:9px 11px;border-bottom:1px solid var(--line2);background:var(--panel2);position:sticky;top:0;white-space:nowrap}
+td{padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody tr:hover td{background:color-mix(in srgb,var(--amber) 5%,transparent)}
+.note{font-size:12.5px;color:var(--mute);line-height:1.55}
+.callout{display:flex;gap:12px;border:1px solid color-mix(in srgb,var(--amber) 45%,transparent);background:color-mix(in srgb,var(--amber) 8%,var(--panel));border-radius:12px;padding:13px 16px;font-size:13px;color:var(--mute);line-height:1.6}
+.callout b{color:var(--amber)}
+.callout svg{flex:none;color:var(--amber);margin-top:2px}
+.empty{padding:34px 18px;text-align:center;color:var(--mute);border:1.5px dashed var(--line2);border-radius:12px;font-size:13.5px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--mute);margin-top:10px}
+.legend span{display:inline-flex;align-items:center;gap:6px}.legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.meter{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.meter i{display:block;height:100%;width:0;border-radius:3px;transition:width 1.1s cubic-bezier(.2,.8,.2,1)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{white-space:nowrap;cursor:pointer;border:1px solid var(--line2);background:var(--panel2);color:var(--mute);border-radius:6px;padding:5px 10px;font:600 11px var(--mono);letter-spacing:.06em}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.rings{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.ring{cursor:pointer;border:1px solid var(--line);border-radius:12px;padding:12px 10px 10px;background:var(--panel2);text-align:center;transition:border-color .2s,transform .2s;min-width:0}
+.ring:hover{transform:translateY(-2px);border-color:var(--line2)}
+.ring.on{border-color:var(--amber);box-shadow:0 0 0 1px var(--amber) inset}
+.ring svg{width:112px;height:112px;display:block;margin:0 auto 6px}
+.ring b{display:block;font:600 12px var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ring small{font-size:11px;color:var(--mute)}
+.ck{position:relative;border:1px solid var(--line);border-radius:12px;padding:15px 16px;background:var(--panel);min-width:0;box-shadow:var(--shadow)}
+.ck .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.ck .id{font:600 11px var(--mono);color:var(--mute);letter-spacing:.08em}
+.ck h4{margin:3px 0 10px;font:700 15px/1.25 var(--display);font-stretch:105%}
+.kv{display:grid;grid-template-columns:88px minmax(0,1fr);gap:5px 12px;font-size:13px}
+.kv>b{font:600 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mute2);padding-top:2px}
+.kv>span{word-break:break-word;min-width:0}
+details{margin-top:10px}summary{cursor:pointer;font:500 12px var(--mono);color:var(--blue)}
+pre{margin:8px 0 0;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;font:12px/1.5 var(--mono);color:var(--mute);overflow:auto;max-height:240px}
+.ledger{list-style:none;margin:0;padding:0;max-height:560px;overflow:auto}
+.ledger li{display:grid;grid-template-columns:52px 14px minmax(0,1fr);gap:0 12px;position:relative;padding-bottom:16px}
+.ledger .run{font:600 11px/1.3 var(--mono);color:var(--mute);text-align:right;padding-top:3px}
+.ledger .run small{display:block;color:var(--mute2);font-weight:400}
+.ledger .pin{position:relative}
+.ledger .pin:before{content:"";position:absolute;left:6px;top:0;bottom:-16px;width:2px;background:var(--line)}
+.ledger li:last-child .pin:before{bottom:0}
+.ledger .pin i{position:absolute;left:1px;top:5px;width:12px;height:12px;border-radius:3px;background:var(--pc);box-shadow:0 0 0 3px var(--panel),0 0 10px var(--pc)}
+.ledger .t{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font:700 13.5px var(--display);font-stretch:106%}
+.ledger .x{font-size:13px;color:var(--mute);margin-top:3px}
+.ledger .df{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 8px;font:11.5px/1.45 var(--mono);color:var(--mute2);margin-top:6px;word-break:break-all}
+.ledger .df b{color:var(--mute);font-weight:500}
+.row3{display:grid;grid-template-columns:minmax(0,120px) minmax(0,1fr) 52px;gap:12px;align-items:center;margin:9px 0;font-size:13px}
+.row3 .lab{font:500 12px var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row3 .val{font:600 13px var(--mono);text-align:right}
+.tile{display:flex;align-items:center;gap:12px;padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);min-width:0}
+.tile .ic{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;flex:none;color:var(--tc);background:color-mix(in srgb,var(--tc) 14%,transparent)}
+.tile .x{font-weight:600;font-size:13px}.tile .y{font-size:12px;color:var(--mute)}
+.tile .z{margin-left:auto;font:600 14px var(--mono);color:var(--tc);white-space:nowrap;padding-left:8px}
+.cw{overflow-x:auto}.cw>svg{min-width:var(--mw,0)}
+.foot{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--mute2)}
+#tip{position:fixed;pointer-events:none;z-index:60;background:var(--panel2);border:1px solid var(--line2);border-radius:9px;padding:9px 11px;font-size:12.5px;line-height:1.45;box-shadow:var(--shadow);display:none;max-width:360px;color:var(--mute)}
+#tip b{color:var(--ink)}
+svg text{font-family:var(--sans)}
+@media (max-width:1100px){.hero{grid-template-columns:1fr}.g3,.g32,.g23{grid-template-columns:1fr}.chain{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:760px){.g2{grid-template-columns:1fr}.ro{grid-template-columns:1fr 1fr}.ro>div:nth-child(2){border-right:0}.ro>div:nth-child(-n+2){border-bottom:1px solid var(--line)}
+ .chain{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:18px}.mod{flex:0 0 72%;scroll-snap-align:start}.sh{grid-template-columns:1fr}.bar .hide{display:none}.rail .gl{display:none}.kv{grid-template-columns:1fr}.kv>b{padding-top:6px}.tbtn span{display:none}}
+@media (max-width:420px){.ro .v{font-size:24px}.logo small{display:none}.dial .row{font-size:12px}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.trace{stroke-dashoffset:0}}
+</style></head>
+<body>
+<header class="mast">
+ <div class="gut"><div class="wrap">
+  <div class="bar">
+   <div class="logo"><svg width="38" height="38" viewBox="0 0 38 38" aria-hidden="true"><rect x="1" y="1" width="36" height="36" rx="9" style="fill:var(--panel);stroke:var(--line2)"/>
+    <path d="M6 22h6l3-10 5 16 3-9 2 3h7" style="fill:none;stroke:var(--amber);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round"/></svg>
+    <div><b id="bName">RDF</b><small id="bSub">Risk Drift Monitor</small></div></div>
+   <div class="sp"></div>
+   <span class="stamp hide" id="stk"></span>
+   <span class="stamp" id="sOrigin"><span class="led"></span><span></span></span>
+   <button class="tbtn" id="theme" type="button" aria-label="Switch dark or light theme"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg><span id="tlab">Theme</span></button>
+  </div>
+  <div class="hero" id="hero"></div>
+  <div class="rec" id="rec"></div>
+  <div class="chain" id="chain"></div>
+ </div></div>
+</header>
+<nav class="rail gut" aria-label="Sections"><div class="wrap in" id="rail"></div></nav>
+<main class="gut"><div class="wrap" id="main"></div></main>
+<div id="tip" role="tooltip"></div>
+<script>
+const D=/*__DATA__*/null;
+const $=s=>document.querySelector(s), esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const f1=x=>x==null?"–":(+x).toFixed(1), f2=x=>x==null?"–":(+x).toFixed(2);
+const day=t=>t?String(t).slice(0,10):"–", dt=t=>t?String(t).replace("T"," ").replace("Z","").slice(0,16):"–";
+const ST={COMPLIANT:"var(--ok)",NON_COMPLIANT:"var(--bad)",UNKNOWN:"var(--unk)",ERROR:"var(--err)"};
+const SL={COMPLIANT:"Pass",NON_COMPLIANT:"Fail",UNKNOWN:"Unknown",ERROR:"Error"};
+const PR={CRITICAL:"var(--bad)",HIGH:"var(--hi)",MEDIUM:"var(--warn)",LOW:"var(--blue)",INFO:"var(--mute2)"};
+const BD={Low:"var(--ok)",Medium:"var(--warn)",High:"var(--hi)",Critical:"var(--bad)"};
+const CC={V:"var(--c1)",C:"var(--c3)",D:"var(--c2)",A:"var(--c4)"};
+const CN={V:"Vulnerability",C:"Compliance",D:"Config drift",A:"Criticality"};
+const DIR={INCREASED:"var(--bad)",DECREASED:"var(--ok)",UNCHANGED:"var(--mute)",BASELINE:"var(--blue)",NOT_COMPARABLE:"var(--warn)"};
+const PAL=["var(--c1)","var(--c2)","var(--c3)","var(--c4)","var(--c5)","var(--c6)","var(--c7)"];
+const stamp=(t,c,rot)=>`<span class="stamp${rot?" rot":""}" style="--sc:${c}">${esc(t)}</span>`;
+const meter=(x,c)=>`<div class="meter"><i data-w="${Math.max(0,Math.min(1,x||0))*100}" style="background:${c}"></i></div>`;
+const I={ov:'<circle cx="12" cy="12" r="9"/><path d="M12 12l5-3"/><path d="M12 3v2M3 12h2M19 12h2"/>',
+ cmp:'<path d="M12 3 20 6v6c0 5-3.4 8.5-8 9.5C7.4 20.5 4 17 4 12V6z"/><path d="m9 12 2 2 4-4"/>',
+ drf:'<path d="M2 12h4l3-8 4 16 3-8h6"/>',vul:'<path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/>',
+ pri:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',rd:'<path d="M3 20h18"/><path d="m4 16 5-5 4 3 7-8"/><path d="M15 6h5v5"/>',
+ exp:'<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/><path d="M8 11h6M11 8v6"/>',tst:'<path d="M9 3h6M10 3v6L4 19a1.5 1.5 0 0 0 1.3 2h13.4A1.5 1.5 0 0 0 20 19l-6-10V3"/><path d="M7 15h10"/>',
+ cmpb:'<circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 6h7M6 8.5v4a4 4 0 0 0 4 4h5.5"/>',
+ hist:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',db:'<path d="M4 7c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z"/><path d="M4 7v10c0 1.7 3.6 3 8 3s8-1.3 8-3V7"/>',
+ chk:'<path d="m5 12 5 5L20 7"/>',x:'<path d="M6 6l12 12M18 6 6 18"/>',alert:'<path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/>',
+ info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',link:'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>'};
+const ic=(k,s=16)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[k]}</svg>`;
+const tip=$("#tip");
+function moveTip(e){tip.style.left=Math.max(8,Math.min(e.clientX+14,innerWidth-370))+"px";tip.style.top=Math.max(8,Math.min(e.clientY+16,innerHeight-tip.offsetHeight-10))+"px"}
+document.addEventListener("mouseover",e=>{const t=e.target.closest("[data-tip]");if(t){tip.innerHTML=t.dataset.tip;tip.style.display="block";moveTip(e)}else tip.style.display="none"});
+document.addEventListener("mousemove",e=>{if(tip.style.display==="block")moveTip(e)});
+
+/* ------------------------------------------------ data */
+const A=D.assets, byId=Object.fromEntries(A.map(a=>[a.id,a]));
+const last=a=>a.scores.length?a.scores[a.scores.length-1]:null;
+const synthetic=A.some(a=>a.origin==="SYNTHETIC");
+const W=D.model.weights, M=D.meta;
+const assetColor=Object.fromEntries(A.map((a,i)=>[a.id,PAL[i%PAL.length]]));
+let cur=(()=>{const r=[...A].sort((a,b)=>b.scores.length-a.scores.length||(last(b)?.score??-1)-(last(a)?.score??-1));return r.length?r[0].id:null})();
+const scored=A.filter(a=>last(a)&&last(a).score!=null);
+const meanRisk=scored.length?scored.reduce((x,a)=>x+last(a).score,0)/scored.length:null;
+const bandOf=v=>{if(v==null)return null;let b=null;Object.entries(D.model.bands).sort((x,y)=>x[1]-y[1]).forEach(([k,lo])=>{if(v>=lo)b=k});return b};
+
+function head(cap,t,p,picker){return `<div class="sh"><div><div class="cap">${cap}</div><h2>${t}</h2>${p?`<p>${p}</p>`:""}</div>${picker?assetPicker():""}</div>`}
+function assetPicker(){return A.length?`<label class="pick"><span class="cap">Asset</span><select id="asel" aria-label="Asset under review">${A.map(a=>`<option value="${esc(a.id)}" ${a.id==cur?"selected":""}>${esc(a.id)}${last(a)?` · R ${f1(last(a).score)}`:""}</option>`).join("")}</select></label>`:""}
+function ro(items){return `<div class="ro">${items.map(([v,l,s,c,m])=>`<div style="--rc:${c}"><div class="cap"><i></i>${l}</div><div class="v" data-count="${esc(v)}">${esc(v)}</div><div class="s">${s||""}</div>${m!=null?`<div class="m"><i data-w="${Math.max(0,Math.min(1,m))*100}"></i></div>`:""}</div>`).join("")}</div>`}
+const empty=t=>`<div class="empty">${t}</div>`;
+const pnl=(title,icon,body,cap)=>`<div class="pnl"><h3>${ic(icon)}${title}${cap?`<span class="cap">${cap}</span>`:""}</h3>${body}</div>`;
+
+/* ------------------------------------------------ masthead */
+function renderMast(){
+ let t=esc(M.title);
+ t=t.replace("Continuous Compliance Monitoring",'<span class="hb">Continuous Compliance Monitoring</span>').replace("Risk Drift Detection",'<span class="hl">Risk Drift Detection</span>');
+ const b=bandOf(meanRisk),gc=BD[b]||"var(--mute)";
+ const fails=A.flatMap(a=>a.checks).filter(c=>c.status=="NON_COMPLIANT").length, tot=A.flatMap(a=>a.checks).length;
+ const sig=A.reduce((n,a)=>n+a.scores.filter(s=>s.drift&&s.drift.sig).length,0);
+ $("#hero").innerHTML=`<div><div class="cap">${esc(M.phase||"M.Tech Dissertation")}</div><h1>${t}</h1>
+  <div class="by"><b>${esc(M.author)}</b>${M.enrolment?` · ${esc(M.enrolment)}`:""} · ${esc(M.program)}${M.institute?`, ${esc(M.institute)}`:""}${M.guides?`<br>${esc(M.guides)}`:""}</div></div>
+  <div class="dial"><div class="cap" style="display:flex;justify-content:space-between;gap:10px"><span>Portfolio risk posture</span><span>${esc(D.model.version)}</span></div>${dial(meanRisk,gc,b)}
+  <div class="row"><span>Assets monitored</span><b>${A.length}</b></div><div class="row"><span>Controls failing now</span><b style="color:${fails?"var(--bad)":"var(--ok)"}">${fails} / ${tot}</b></div>
+  <div class="row"><span>Significant risk shifts recorded</span><b style="color:var(--amber)">${sig}</b></div></div>`;
+ $("#rec").innerHTML=recorder();
+ const st=[["01","Collect","8 read-only Ubuntu checks","var(--c1)"],["02","Evaluate","OPA · Rego · 4 verdicts","var(--c5)"],["03","Detect drift","Snapshot diff in SQLite","var(--c2)"],["04","Import vulns","Greenbone XML / CSV","var(--c7)"],["05","Score risk",`R = ${W.V}V + ${W.C}C + ${W.D}D + ${W.A}A`,"var(--c4)"]];
+ $("#chain").innerHTML=st.map(s=>`<div class="mod" style="--mc:${s[3]}"><i></i><div class="n">STAGE ${s[0]}</div><b>${s[1]}</b><span>${esc(s[2])}</span></div>`).join("");
+}
+function dial(v,c,b){
+ const r=78,cx=100,cy=96,arc=(a0,a1)=>{const p=a=>[cx+r*Math.cos(Math.PI*(1-a)),cy-r*Math.sin(Math.PI*(1-a))];const[x0,y0]=p(a0),[x1,y1]=p(a1);return `M${x0} ${y0}A${r} ${r} 0 0 1 ${x1} ${y1}`};
+ const bands=Object.entries(D.model.bands).sort((x,y)=>x[1]-y[1]);let s=`<svg viewBox="0 0 200 150" style="width:100%;max-width:300px;display:block;margin:4px auto 0" role="img" aria-label="Mean risk ${f1(v)}">`;
+ bands.forEach(([k,lo],i)=>{const hi=i<bands.length-1?bands[i+1][1]:100;s+=`<path d="${arc(lo/100+.004,hi/100-.004)}" style="fill:none;stroke:${BD[k]};stroke-width:5;opacity:.45"/>`});
+ for(let k=0;k<=20;k++){const ang=Math.PI*(1-k/20),r1=r-11,r2=k%5?r-15:r-19;s+=`<line x1="${cx+r1*Math.cos(ang)}" y1="${cy-r1*Math.sin(ang)}" x2="${cx+r2*Math.cos(ang)}" y2="${cy-r2*Math.sin(ang)}" style="stroke:var(--mute2);stroke-width:${k%5?1:1.6}"/>`}
+ if(v!=null){const ang=Math.PI*(1-v/100);s+=`<path d="${arc(0.002,Math.max(.01,v/100))}" style="fill:none;stroke:${c};stroke-width:5;stroke-linecap:round"/>
+  <line x1="${cx}" y1="${cy}" x2="${cx+(r-22)*Math.cos(ang)}" y2="${cy-(r-22)*Math.sin(ang)}" style="stroke:var(--ink);stroke-width:2.4;stroke-linecap:round"/><circle cx="${cx}" cy="${cy}" r="5" style="fill:var(--ink)"/>`}
+ s+=`<text x="${cx}" y="${cy+38}" text-anchor="middle" style="fill:${c};font:600 30px var(--mono)">${f1(v)}</text><text x="${cx}" y="${cy+52}" text-anchor="middle" style="fill:var(--mute);font:600 9.5px var(--mono);letter-spacing:.14em">MEAN R · ${esc((b||"no data").toUpperCase())}</text>
+  <text x="${cx-r}" y="${cy+16}" text-anchor="middle" style="fill:var(--mute2);font:10px var(--mono)">0</text><text x="${cx+r}" y="${cy+16}" text-anchor="middle" style="fill:var(--mute2);font:10px var(--mono)">100</text></svg>`;
+ return s;
+}
+function recorder(){
+ const all=A.flatMap(a=>a.scores.map(s=>Date.parse(s.t))).filter(Number.isFinite);
+ const hd=`<div class="hd">${ic("drf")}<span class="cap">Drift recorder · risk score per asset over time</span><span style="flex:1"></span>${A.map(a=>`<span class="cap" style="display:inline-flex;align-items:center;gap:5px;letter-spacing:.04em;text-transform:none"><i style="width:14px;height:3px;border-radius:2px;background:${assetColor[a.id]}"></i>${esc(a.id)}</span>`).join("")}</div>`;
+ if(!all.length)return hd+`<div style="padding:28px;text-align:center" class="note">No scores recorded yet. Run an assessment to start the trace.</div>`;
+ let t0=Math.min(...all),t1=Math.max(...all);if(t1-t0<864e5){t0-=432e5;t1+=432e5}
+ const Wd=1280,H=210,L=34,R=132,T=14,B=24,X=t=>L+(t-t0)/(t1-t0)*(Wd-L-R),Y=v=>T+(1-v/100)*(H-T-B);
+ let s=`<svg viewBox="0 0 ${Wd} ${H}" role="img" aria-label="Risk score traces for all assets">`;
+ [0,25,50,75,100].forEach(v=>s+=`<line x1="${L}" x2="${Wd-R+10}" y1="${Y(v)}" y2="${Y(v)}" style="stroke:var(--line);stroke-dasharray:${v%50?"2 5":"none"}"/><text x="${L-8}" y="${Y(v)+3.5}" text-anchor="end" style="fill:var(--mute2);font:10px var(--mono)">${v}</text>`);
+ const nt=Math.max(1,Math.min(Math.round((t1-t0)/864e5),12));for(let k=0;k<=nt;k++){const tt=t0+k*(t1-t0)/nt;s+=`<text x="${X(tt)}" y="${H-6}" text-anchor="middle" style="fill:var(--mute2);font:10px var(--mono)">${new Date(tt).toISOString().slice(5,10)}</text>`}
+ const ends=[];
+ A.forEach((a,i)=>{const pts=a.scores.filter(x=>x.score!=null).map(x=>[X(Date.parse(x.t)),Y(x.score),x]);if(!pts.length)return;const c=assetColor[a.id];
+  if(pts.length==1)pts.unshift([L,pts[0][1],null]);
+  let d=`M${pts[0][0]} ${pts[0][1]}`;for(let k=1;k<pts.length;k++)d+=`H${pts[k][0]}V${pts[k][1]}`;
+  let len=0;for(let k=1;k<pts.length;k++)len+=Math.abs(pts[k][0]-pts[k-1][0])+Math.abs(pts[k][1]-pts[k-1][1]);
+  s+=`<path class="trace" d="${d}" style="stroke:${c};--len:${Math.ceil(len)+2};animation-delay:${i*.12}s"/>`;
+  pts.forEach(([x,y,sc])=>{if(sc&&sc.drift&&sc.drift.sig)s+=`<circle cx="${x}" cy="${y}" r="4.5" style="fill:var(--bg);stroke:${c};stroke-width:2" data-tip="<b>${esc(a.id)}</b> · ${dt(sc.t)}<br>R ${f1(sc.score)} · ${sc.drift.dir.toLowerCase()} ${sc.drift.delta>0?"+":""}${f2(sc.drift.delta)}"/>`});
+  const p=pts[pts.length-1];ends.push([p[1],a,c,p]);});
+ ends.sort((x,y)=>x[0]-y[0]);let lastY=-99;ends.forEach(e=>{const y=Math.max(e[0],lastY+13);lastY=y;
+  s+=`<circle cx="${e[3][0]}" cy="${e[3][1]}" r="3.6" style="fill:${e[2]}"/><path d="M${e[3][0]+5} ${e[3][1]}L${Wd-R+16} ${y}" style="stroke:${e[2]};stroke-width:1;opacity:.5;fill:none"/>
+  <text x="${Wd-R+20}" y="${y+3.5}" style="fill:${e[2]};font:600 10.5px var(--mono)">${f1(e[3][2]&&e[3][2].score)} ${esc(e[1].id.replace(/^syn-/,""))}</text>`});
+ s+=`<g class="sweep" style="--sw:${Wd-L-R}px"><line x1="${L}" x2="${L}" y1="${T}" y2="${H-B}" style="stroke:var(--amber);stroke-width:1.2;opacity:.55"/><rect x="${L-22}" y="${T}" width="22" height="${H-T-B}" style="fill:var(--amber);opacity:.05"/></g>`;
+ return hd+`<div class="cw" style="--mw:760px">${s}</svg></div>`;
+}
+
+/* ------------------------------------------------ 1 overview */
+function sOverview(){
+ const lc=A.flatMap(a=>a.checks),cnt=s=>lc.filter(c=>c.status==s).length;
+ const unresolved=A.reduce((n,a)=>{const st=Object.fromEntries(a.checks.map(c=>[c.id,c.status]));return n+a.drift.filter(e=>["CRITICAL","HIGH"].includes(e.priority)&&e.check_id&&st[e.check_id]!=="COMPLIANT"&&!["CORRECTED","EVIDENCE_RESTORED"].includes(e.category)).length},0);
+ const fnd=A.flatMap(a=>a.scans.length?a.scans[a.scans.length-1].findings.filter(f=>f.status=="OPEN"):[]),maxc=Math.max(0,...fnd.map(f=>f.cvss_score||0));
+ let h=head("Mission control","Governance posture at a glance","Latest stored state of every monitored asset: compliance, drift, vulnerabilities and the explainable risk score that ranks them.");
+ h+=ro([[meanRisk==null?"–":f1(meanRisk),"Mean risk score",scored.length?`max ${f1(Math.max(...scored.map(a=>last(a).score)))} across ${scored.length} assets`:"no scores yet",BD[bandOf(meanRisk)]||"var(--mute)",meanRisk==null?null:meanRisk/100],
+  [`${cnt("COMPLIANT")}/${lc.length}`,"Controls passing",`${cnt("NON_COMPLIANT")} failing · ${cnt("UNKNOWN")+cnt("ERROR")} undetermined`,"var(--ok)",lc.length?cnt("COMPLIANT")/lc.length:null],
+  [String(unresolved),"Open high-priority drift",`${A.reduce((n,a)=>n+a.drift.filter(e=>e.category!="BASELINE").length,0)} drift events on record`,"var(--amber)",null],
+  [String(fnd.length),"Open vulnerability findings",`highest CVSS ${maxc.toFixed(1)}`,"var(--c1)",null]]);
+ h+=`<div class="grid g32 mt">${pnl("Control rings · 8 checks per asset","cmp",rings(),"tap a ring for evidence")}${pnl("Risk ranking","pri",rankRows(),`model ${esc(D.model.version)}`)}</div>`;
+ h+=`<div class="callout mt">${ic("info",18)}<div><b>Reading the numbers.</b> ${synthetic?"Assets marked SYNTHETIC are constructed demonstration data, not a real host assessment or Greenbone scan. ":""}R is a transparent prototype <i>priority</i> score (R = ${W.V}·V + ${W.C}·C + ${W.D}·D + ${W.A}·A), not a probability of compromise. Missing or stale evidence widens the bounds and never counts as zero risk.</div></div>`;
+ return h;
+}
+function ringSvg(a){
+ const m=Object.fromEntries(a.checks.map(c=>[c.id,c])),n=D.catalog.length,R1=50,R2=38,cx=56,cy=56,gap=.05;let s=`<svg viewBox="0 0 112 112" aria-hidden="true">`;
+ D.catalog.forEach((c,i)=>{const a0=-Math.PI/2+i*2*Math.PI/n+gap,a1=-Math.PI/2+(i+1)*2*Math.PI/n-gap,P=(a,r)=>[cx+r*Math.cos(a),cy+r*Math.sin(a)];
+  const[x0,y0]=P(a0,R1),[x1,y1]=P(a1,R1),[x2,y2]=P(a1,R2),[x3,y3]=P(a0,R2),r=m[c.id],col=r?ST[r.status]:"var(--line2)";
+  s+=`<path d="M${x0} ${y0}A${R1} ${R1} 0 0 1 ${x1} ${y1}L${x2} ${y2}A${R2} ${R2} 0 0 0 ${x3} ${y3}Z" style="fill:${col};opacity:${r?.92:.5}" data-tip="<b>${c.id}</b> · ${esc(c.title)}<br>${r?SL[r.status]+": "+esc(r.reason):"no result"}"/>`});
+ const sc=last(a);s+=`<text x="56" y="58" text-anchor="middle" style="fill:${sc?BD[sc.band]||"var(--ink)":"var(--mute)"};font:600 19px var(--mono)">${sc?f1(sc.score):"–"}</text><text x="56" y="72" text-anchor="middle" style="fill:var(--mute2);font:600 8px var(--mono);letter-spacing:.12em">RISK</text></svg>`;
+ return s;
+}
+function rings(){
+ if(!A.length)return empty("No assets registered yet.");
+ return `<div class="rings">${A.map(a=>{const f=a.checks.filter(c=>c.status!="COMPLIANT").length;return `<button type="button" class="ring ${a.id==cur?"on":""}" data-asset="${esc(a.id)}" data-go="compliance">${ringSvg(a)}<b>${esc(a.id)}</b><small>${esc(a.crit)} · ${a.checks.length?(f?`${f} issue${f>1?"s":""}`:"all pass"):"no run"}</small></button>`}).join("")}</div>
+ <div class="legend">${Object.keys(ST).map(k=>`<span><i style="background:${ST[k]}"></i>${SL[k]}</span>`).join("")}<span>segments clockwise from top: ${D.catalog.map(c=>c.id).join(" · ")}</span></div>`;
+}
+function rankRows(){
+ const r=A.filter(a=>last(a)).sort((a,b)=>(last(b).score??-1)-(last(a).score??-1));
+ if(!r.length)return empty("No risk scores yet.");
+ return r.map((a,i)=>{const s=last(a),c=BD[s.band]||"var(--mute)";return `<div class="row3" data-tip="<b>${esc(a.id)}</b> · ${esc(a.crit)}<br>R ${f1(s.score)} (${s.status}) · bounds ${f1(s.lo)}–${f1(s.hi)}"><span class="lab"><span style="color:var(--mute2)">${String(i+1).padStart(2,"0")}</span> ${esc(a.id)}</span>${meter((s.score||0)/100,c)}<span class="val" style="color:${c}">${f1(s.score)}</span></div>`}).join("")+
+ `<div class="legend">${Object.entries(D.model.bands).map(([b,v])=>`<span><i style="background:${BD[b]}"></i>${b} ≥ ${v}</span>`).join("")}</div>`;
+}
+
+/* ------------------------------------------------ 2 compliance */
+function sCompliance(){
+ let h=head("Stage 02 · Policy evaluation","Eight controls, judged by OPA / Rego","Collectors only gather read-only evidence; the Rego policy decides Pass, Fail, Unknown or Error. Missing or failed evidence is never treated as compliant.",true);
+ h+=pnl("Compliance ledger · latest successful assessment","cmp",`<div class="tw" style="max-height:none"><table><thead><tr><th>Asset</th>${D.catalog.map(c=>`<th style="text-align:center" data-tip="<b>${c.id}</b><br>${esc(c.title)}">${c.id}</th>`).join("")}</tr></thead><tbody>
+ ${A.map(a=>{const m=Object.fromEntries(a.checks.map(c=>[c.id,c]));return `<tr><td><button type="button" class="chip ${a.id==cur?"on":""}" data-asset="${esc(a.id)}">${esc(a.id)}</button></td>${D.catalog.map(c=>{const r=m[c.id];
+  return `<td style="text-align:center">${r?`<span class="stamp" style="--sc:${ST[r.status]};min-width:62px;justify-content:center" data-tip="<b>${c.id}</b> · ${esc(c.title)}<br>${esc(r.reason)}">${SL[r.status]}</span>`:`<span class="note">–</span>`}</td>`}).join("")}</tr>`}).join("")}</tbody></table></div>`);
+ const a=byId[cur];
+ if(!a||!a.checks.length)return h+`<div class="mt">${empty("No successful assessment stored for this asset.")}</div>`;
+ h+=`<div class="grid g2 mt">${a.checks.map(c=>`<article class="ck"><div class="top"><div><div class="id">${c.id} · collector ${esc(c.collector||"–")}</div><h4>${esc(c.title)}</h4></div>${stamp(SL[c.status],ST[c.status],true)}</div>
+  <div class="kv"><b>Expected</b><span>${esc(c.expected)}</span><b>Actual</b><span class="mono" style="font-size:12px">${esc(JSON.stringify(c.actual))}</span><b>Verdict</b><span>${esc(c.reason)}</span>
+  ${c.remediation?`<b>Remedy</b><span style="color:var(--amber)">${esc(c.remediation)}</span>`:""}<b>Sources</b><span class="note">${esc((c.sources||[]).join(" · ")||"none")}</span></div>
+  ${c.limitations.length?`<div class="note" style="margin-top:9px;color:var(--warn)">Limitation: ${esc(c.limitations.join(" "))}</div>`:""}${c.errors.length?`<div class="note" style="margin-top:6px;color:var(--bad)">Collector: ${esc(c.errors.join("; "))}</div>`:""}
+  <details><summary>Normalized evidence · check_results:${c.rid}</summary><pre>${esc(JSON.stringify(c.evidence,null,2))}</pre></details></article>`).join("")}</div>`;
+ return h;
+}
+
+/* ------------------------------------------------ 3 drift */
+let prf="ALL";
+function sDrift(){
+ const a=byId[cur];
+ let h=head("Stage 03 · Configuration drift","What changed between assessments","Each run is compared with the previous comparable successful run. Timestamps, ordering and whitespace are normalized away, so only real changes appear. The first run is a baseline, not drift.",true);
+ if(!a)return h+empty("No assets.");
+ const n=c=>a.drift.filter(e=>e.category==c).length;
+ h+=ro([[String(n("NEW_NON_COMPLIANCE")+n("COMPLIANCE_TRANSITION")),"New failures","controls that started failing","var(--bad)"],
+  [String(n("CORRECTED")+n("EVIDENCE_RESTORED")),"Corrected","remediation detected","var(--ok)"],
+  [String(n("CONFIGURATION_CHANGE")),"Silent changes","evidence changed, verdict unchanged","var(--amber)"],
+  [String(n("MISSING_EVIDENCE")+n("ASSESSMENT_FAILED")+n("ASSESSMENT_INCOMPLETE")),"Evidence gaps","missing · failed · incomplete","var(--err)"]]);
+ const list=a.drift.filter(e=>prf=="ALL"||e.priority==prf).slice().reverse();
+ h+=`<div class="grid g32 mt">${pnl(`Drift ledger · ${esc(cur)}`,"drf",`<div class="chips" style="margin-bottom:14px">${["ALL","CRITICAL","HIGH","MEDIUM","LOW","INFO"].map(p=>`<button type="button" class="chip ${p==prf?"on":""}" data-prf="${p}">${p}</button>`).join("")}</div>
+ ${list.length?`<ol class="ledger">${list.map(e=>`<li style="--pc:${PR[e.priority]}"><div class="run">#${e.run_id}<small>${day(e.detected_at).slice(5)}</small></div><div class="pin"><i></i></div><div>
+  <div class="t">${stamp(e.priority,PR[e.priority])} ${esc(e.category.replace(/_/g," ").toLowerCase().replace(/^./,x=>x.toUpperCase()))}${e.check_id?` <span class="mono" style="color:var(--mute);font-weight:500">${esc(e.check_id)}</span>`:""}${e.previous_status||e.current_status?`<span class="mono note">${esc(e.previous_status||"–")} → ${esc(e.current_status||"–")}</span>`:""}</div>
+  <div class="x">${esc(e.explanation)}</div>${e.prev||e.cur?`<div class="df"><b>was</b><span>${esc(e.prev||"–")}</span><b>now</b><span>${esc(e.cur||"–")}</span></div>`:""}</div></li>`).join("")}</ol>`:empty("No drift events match this filter.")}`)}
+ ${pnl("Verdict history","hist",statusStrip(a))}</div>`;
+ return h;
+}
+function statusStrip(a){
+ const runs=a.runs.filter(r=>r.status!="FAILED").map(r=>r.run_id);
+ if(!runs.length)return empty("No runs.");
+ const cw=Math.max(14,Math.min(34,Math.floor(300/runs.length))),L=70,Wd=L+runs.length*(cw+4)+4,H=D.catalog.length*27+30;
+ let s=`<div class="cw"><svg viewBox="0 0 ${Wd} ${H}" width="${Wd}" style="max-width:100%">`;
+ D.catalog.forEach((c,i)=>{const y=4+i*27,hs=Object.fromEntries(a.check_hist[c.id]||[]);
+  s+=`<text x="${L-8}" y="${y+15}" text-anchor="end" style="fill:var(--ink);font:500 11px var(--mono)">${c.id}</text>`;
+  runs.forEach((r,j)=>{const st=hs[r];s+=`<rect x="${L+j*(cw+4)}" y="${y+2}" width="${cw}" height="19" rx="3" style="fill:${st?ST[st]:"var(--line)"};opacity:${st?.9:.5}" data-tip="<b>${c.id}</b> · run #${r}<br>${st?SL[st]:"no result"}"/>`})});
+ runs.forEach((r,j)=>{if(runs.length<=12||j%Math.ceil(runs.length/10)==0)s+=`<text x="${L+j*(cw+4)+cw/2}" y="${H-5}" text-anchor="middle" style="fill:var(--mute2);font:9.5px var(--mono)">#${r}</text>`});
+ return s+`</svg></div><div class="legend">${Object.keys(ST).map(k=>`<span><i style="background:${ST[k]}"></i>${SL[k]}</span>`).join("")}</div><p class="note">One column per stored run, oldest to newest.</p>`;
+}
+
+/* ------------------------------------------------ 4 vulnerabilities */
+function sVuln(){
+ const a=byId[cur];
+ let h=head("Stage 04 · Vulnerability intake","Greenbone / OpenVAS findings","Exported reports (XML or CSV Results) are parsed safely, de-duplicated per NVT, host and port, and stored. Only the latest scan feeds the score; older scans are flagged stale.",true);
+ if(!a)return h+empty("No assets.");
+ if(!a.scans.length)return h+empty(`No Greenbone report imported for ${esc(cur)}. Vulnerability risk stays UNKNOWN, not zero.`);
+ const sc=a.scans[a.scans.length-1],f=sc.findings,open=f.filter(x=>x.status=="OPEN"),cv=open.map(x=>x.cvss_score).filter(x=>x!=null);
+ const age=(Date.now()-Date.parse(sc.scan_ended_at||sc.imported_at))/864e5,stale=!(age<=D.model.stale_days);
+ h+=ro([[String(open.length),"Open findings",`${f.length-open.length} excluded (false positive / debug)`,"var(--c1)"],
+  [cv.length?Math.max(...cv).toFixed(1):"–","Highest CVSS",`${cv.filter(x=>x>=7).length} at 7.0 or above`,"var(--bad)",cv.length?Math.max(...cv)/10:null],
+  [String(open.filter(x=>x.cvss_score==null).length),"Missing CVSS","kept NULL, label fallback in score","var(--warn)"],
+  [isFinite(age)?age.toFixed(0)+" d":"–","Scan age",stale?`stale after ${D.model.stale_days} days`:`fresh · limit ${D.model.stale_days} days`,stale?"var(--warn)":"var(--ok)",isFinite(age)?Math.min(1,age/D.model.stale_days):null]]);
+ h+=`<div class="grid g23 mt">${pnl("CVSS distribution","pri",cvssHist(cv),esc(sc.source_file))}${pnl("Imported reports","db",`<div class="tw"><table><thead><tr><th>#</th><th>File</th><th>Format</th><th>Scan end</th><th>Findings</th><th>Dup</th><th>Skip</th></tr></thead><tbody>
+ ${a.scans.slice().reverse().map(s=>`<tr><td class="mono">${s.scan_id}</td><td class="mono">${esc(s.source_file)}</td><td>${stamp(s.report_format.replace("GREENBONE_",""),"var(--blue)")}</td><td class="mono">${day(s.scan_ended_at)}</td><td class="mono">${s.finding_count}</td><td class="mono">${s.duplicate_count}</td><td class="mono">${s.skipped_count}</td></tr>`).join("")}</tbody></table></div>`)}</div>`;
+ h+=`<div class="mt">${pnl("Findings","vul",`<div class="tw"><table><thead><tr><th>CVSS</th><th>Finding</th><th>Port</th><th>CVEs</th><th>QoD</th><th>Status</th><th>Solution</th></tr></thead><tbody>
+ ${f.slice().sort((x,y)=>(y.cvss_score??-1)-(x.cvss_score??-1)).map(x=>{const c=x.cvss_score==null?"var(--mute2)":x.cvss_score>=9?"var(--bad)":x.cvss_score>=7?"var(--hi)":x.cvss_score>=4?"var(--warn)":"var(--ok)";
+ return `<tr><td>${stamp(x.cvss_score==null?"n/a":x.cvss_score.toFixed(1),c)}</td><td style="min-width:220px"><b style="font-weight:600">${esc(x.name)}</b><div class="mono note" style="font-size:11px">${esc(x.nvt_oid||"")} · vulnerability_findings:${x.finding_id}</div></td>
+ <td class="mono">${esc(x.port||"–")}</td><td>${(x.cves||[]).map(v=>`<span class="mono" style="color:var(--blue);font-size:12px;display:block">${esc(v)}</span>`).join("")||'<span class="note">none listed</span>'}</td><td class="mono">${x.qod??"–"}</td><td class="mono">${esc(x.status)}</td><td class="note" style="min-width:200px">${esc(x.solution||"")}</td></tr>`}).join("")}</tbody></table></div>`)}</div>`;
+ return h;
+}
+function cvssHist(cv){
+ if(!cv.length)return empty("No CVSS scores in this scan.");
+ const b=Array(10).fill(0);cv.forEach(v=>b[Math.min(9,Math.floor(v))]++);const mx=Math.max(...b),Wd=560,H=190,L=30,bw=(Wd-L-8)/10;
+ let s=`<div class="cw"><svg viewBox="0 0 ${Wd} ${H+30}" width="100%">`;
+ [0,.5,1].forEach(k=>{const y=8+(1-k)*H*.85;s+=`<line x1="${L}" x2="${Wd-4}" y1="${y}" y2="${y}" style="stroke:var(--line)"/><text x="${L-6}" y="${y+4}" text-anchor="end" style="fill:var(--mute2);font:10px var(--mono)">${Math.round(mx*k*10)/10}</text>`});
+ b.forEach((n,i)=>{const hh=n/mx*H*.85,x=L+i*bw+4,c=i>=9?"var(--bad)":i>=7?"var(--hi)":i>=4?"var(--warn)":"var(--ok)";
+  s+=`<rect x="${x}" y="${8+H*.85-hh}" width="${bw-8}" height="${Math.max(n?3:0,hh)}" rx="3" style="fill:${c}" data-tip="CVSS ${i}–${i+1}: <b>${n}</b> finding${n==1?"":"s"}"/><text x="${x+(bw-8)/2}" y="${H+6}" text-anchor="middle" style="fill:var(--mute);font:10.5px var(--mono)">${i}</text>`});
+ return s+`<text x="${(Wd+L)/2}" y="${H+24}" text-anchor="middle" style="fill:var(--mute2);font:600 9.5px var(--mono);letter-spacing:.12em">CVSS BASE SCORE</text></svg></div>`;
+}
+
+/* ------------------------------------------------ 5 prioritisation */
+function sPrio(){
+ let h=head("Stage 05 · Risk scoring",`R = ${W.V}·V + ${W.C}·C + ${W.D}·D + ${W.A}·A`,"Every component is normalized to 0–100. Bars show the points each component contributes; whiskers show the range when data is missing or stale. A prototype priority indicator, not a probability of compromise.");
+ const r=A.filter(a=>last(a)).sort((a,b)=>(last(b).score??-1)-(last(a).score??-1));
+ if(!r.length)return h+empty("No risk scores yet.");
+ h+=ro(["V","C","D","A"].map(k=>[W[k].toFixed(2),`${CN[k]} weight`,{V:"latest Greenbone scan, CVSS-based",C:"8 weighted check verdicts",D:`unresolved drift · |ΔR| ≥ ${D.model.sig} significant`,A:"Low 25 · Medium 50 · High 75 · Critical 100"}[k],CC[k],W[k]]));
+ const Wd=1000,L=150,rh=42,H=r.length*rh+36,sc=(Wd-L-70)/100;
+ let s=`<svg viewBox="0 0 ${Wd} ${H}" width="100%">`;
+ [0,25,50,75,100].forEach(v=>{const x=L+v*sc;s+=`<line x1="${x}" x2="${x}" y1="2" y2="${H-24}" style="stroke:var(--line);stroke-dasharray:${v?"3 4":"none"}"/><text x="${x}" y="${H-8}" text-anchor="middle" style="fill:var(--mute2);font:10px var(--mono)">${v}</text>`});
+ r.forEach((a,i)=>{const t=last(a),y=6+i*rh;let x=L;
+  s+=`<text x="${L-12}" y="${y+15}" text-anchor="end" style="fill:var(--ink);font:600 12px var(--mono)">${esc(a.id)}</text><text x="${L-12}" y="${y+29}" text-anchor="end" style="fill:var(--mute2);font:10px var(--sans)">${esc(a.crit)} · ${t.status.toLowerCase()}</text>`;
+  if(t.status!="UNKNOWN")["V","C","D","A"].forEach(k=>{const v=t[k];if(v==null)return;const w=W[k]*v*sc;
+   s+=`<rect x="${x}" y="${y+5}" width="${Math.max(0,w-2)}" height="22" rx="3" style="fill:${CC[k]}" data-tip="<b>${esc(a.id)}</b> · ${CN[k]}<br>${k} = ${f1(v)} × ${W[k]} = <b>${f1(W[k]*v)} pts</b>"/>`;x+=w});
+  if(t.lo!=null&&t.hi!=null&&t.hi-t.lo>.05)s+=`<path d="M${L+t.lo*sc} ${y+33}H${L+t.hi*sc}M${L+t.lo*sc} ${y+29}v8M${L+t.hi*sc} ${y+29}v8" style="stroke:var(--mute);stroke-width:1.4;fill:none"/>`;
+  s+=`<text x="${Math.max(x,L+(t.score||0)*sc)+8}" y="${y+21}" style="fill:${BD[t.band]||"var(--mute)"};font:600 13px var(--mono)">${f1(t.score)}</text>`});
+ h+=`<div class="mt">${pnl("Weighted contribution per asset","pri",`<div class="cw" style="--mw:640px">${s}</svg></div><div class="legend">${["V","C","D","A"].map(k=>`<span><i style="background:${CC[k]}"></i>${CN[k]} (${k})</span>`).join("")}<span>whisker = bounds with missing or undetermined data</span></div>`,"latest score")}</div>`;
+ h+=`<div class="mt">${pnl("Score register","db",`<div class="tw"><table><thead><tr><th>Asset</th><th>R</th><th>Band</th><th>Status</th><th>Bounds</th><th>V</th><th>C</th><th>D</th><th>A</th><th>Data</th><th>Warnings</th></tr></thead><tbody>
+ ${r.map(a=>{const t=last(a);return `<tr><td><b class="mono" style="font-weight:600">${esc(a.id)}</b></td><td class="mono" style="color:${BD[t.band]};font-weight:600">${f1(t.score)}</td><td>${t.band?stamp(t.band,BD[t.band]):"–"}</td><td class="mono">${t.status}</td><td class="mono">${f1(t.lo)}–${f1(t.hi)}</td>
+ ${["V","C","D","A"].map(k=>`<td class="mono">${f1(t[k])}</td>`).join("")}<td>${stamp(a.origin=="SYNTHETIC"?"synthetic":"host",a.origin=="SYNTHETIC"?"var(--warn)":"var(--ok)")}</td><td class="note" style="min-width:220px">${esc((t.warn||[]).join(" · ")||"—")}</td></tr>`}).join("")}</tbody></table></div>`)}</div>`;
+ return h;
+}
+
+/* ------------------------------------------------ 6 risk drift */
+function sRiskDrift(){
+ const a=byId[cur];
+ let h=head("Risk drift","ΔR = Rₜ − Rₜ₋₁, recorded over time",`Each score is compared only with the previous comparable score (same asset, model version and component set). |ΔR| ≥ ${D.model.sig} is significant. The model is linear, so ΔR splits exactly into component contributions.`,true);
+ if(!a||!a.scores.length)return h+empty("No scores for this asset yet.");
+ const sc=a.scores,lt=sc[sc.length-1],dd=sc.filter(s=>s.drift&&s.drift.delta!=null);
+ h+=ro([[f1(lt.score),"Current R",`${lt.status.toLowerCase()} · ${lt.band||"no band"} · ${esc(lt.crit)}`,BD[lt.band]||"var(--mute)",(lt.score||0)/100],
+  [lt.drift&&lt.drift.delta!=null?(lt.drift.delta>0?"+":"")+f2(lt.drift.delta):"–","Latest ΔR",lt.drift?lt.drift.dir.toLowerCase().replace("_"," "):"–",lt.drift?DIR[lt.drift.dir]:"var(--mute)"],
+  [String(dd.filter(s=>s.drift.sig).length),"Significant shifts",`${dd.filter(s=>s.drift.delta>0).length} up · ${dd.filter(s=>s.drift.delta<0).length} down`,"var(--amber)"],
+  [String(sc.length),"Scores recorded",`model ${esc(lt.model)}`,"var(--c5)"]]);
+ h+=`<div class="mt">${pnl(`Risk trace · ${esc(cur)}`,"rd",`<div class="cw" style="--mw:720px">${lineChart(sc,a)}</div>`)}</div>`;
+ h+=`<div class="grid g2 mt">${pnl("What moved the latest change","pri",waterfall(lt))}${pnl("Risk drift events","hist",`<div class="tw" style="max-height:360px"><table><thead><tr><th>When</th><th>R</th><th>ΔR</th><th>Direction</th><th>Status</th></tr></thead><tbody>
+ ${sc.slice().reverse().map(s=>`<tr><td class="mono">${dt(s.t)}</td><td class="mono">${f1(s.score)}</td><td class="mono" style="color:${s.drift?DIR[s.drift.dir]:"inherit"}">${s.drift&&s.drift.delta!=null?(s.drift.delta>0?"+":"")+f2(s.drift.delta):"–"}</td><td>${s.drift?stamp(s.drift.dir.replace("_"," ")+(s.drift.sig?" ●":""),DIR[s.drift.dir]):"–"}</td><td class="mono">${s.status}</td></tr>`).join("")}</tbody></table></div>`)}</div>`;
+ return h;
+}
+function lineChart(sc,a){
+ const Wd=1060,H=310,L=40,R=24,T=16,B=36,n=sc.length,X=i=>n<2?L+(Wd-L-R)/2:L+i*(Wd-L-R)/(n-1),Y=v=>T+(1-v/100)*(H-T-B);
+ let s=`<svg viewBox="0 0 ${Wd} ${H}" width="100%" role="img" aria-label="Risk score history">`;
+ const bands=Object.entries(D.model.bands).sort((x,y)=>x[1]-y[1]);
+ bands.forEach(([b,lo],i)=>{const hi=i<bands.length-1?bands[i+1][1]:100;s+=`<rect x="${L}" y="${Y(hi)}" width="${Wd-L-R}" height="${Y(lo)-Y(hi)}" style="fill:${BD[b]};opacity:.06"/><text x="${L+8}" y="${Y(hi)+14}" style="fill:${BD[b]};font:600 9.5px var(--mono);letter-spacing:.12em;opacity:.85">${b.toUpperCase()}</text>`});
+ [0,25,50,75,100].forEach(v=>s+=`<line x1="${L}" x2="${Wd-R}" y1="${Y(v)}" y2="${Y(v)}" style="stroke:var(--line)"/><text x="${L-8}" y="${Y(v)+4}" text-anchor="end" style="fill:var(--mute2);font:10px var(--mono)">${v}</text>`);
+ const pts=sc.map((x,i)=>[i,x]).filter(([,x])=>x.score!=null);
+ if(pts.length){const up=pts.map(([i,x])=>`${X(i)},${Y(x.hi??x.score)}`),dn=pts.slice().reverse().map(([i,x])=>`${X(i)},${Y(x.lo??x.score)}`);
+  s+=`<polygon points="${up.concat(dn).join(" ")}" style="fill:var(--amber);opacity:.14"/>`;
+  const d=pts.map(([i,x],k)=>`${k?"L":"M"}${X(i)} ${Y(x.score)}`).join("");let len=0;for(let k=1;k<pts.length;k++)len+=Math.hypot(X(pts[k][0])-X(pts[k-1][0]),Y(pts[k][1].score)-Y(pts[k-1][1].score));
+  s+=`<path class="trace" d="${d}" style="stroke:var(--amber);stroke-width:2.6;--len:${Math.ceil(len)+2}"/>`;
+  pts.forEach(([i,x])=>{const dr=x.drift,top=(x.expl||[]).filter(e=>e.kind=="DRIFT"&&!["delta","note","component_contribution"].includes(e.factor)).slice(0,3).map(e=>"• "+esc(e.detail)).join("<br>");
+   if(dr&&dr.sig)s+=`<circle cx="${X(i)}" cy="${Y(x.score)}" r="11" style="fill:none;stroke:${DIR[dr.dir]};stroke-width:2"/>`;
+   s+=`<circle cx="${X(i)}" cy="${Y(x.score)}" r="6" style="fill:${BD[x.band]||"var(--mute)"};stroke:var(--panel);stroke-width:2.5" data-tip="<b>${dt(x.t)}</b><br>R ${f1(x.score)} · ${x.status} · ${x.band||""}<br>${dr?`${dr.dir}${dr.delta!=null?" "+(dr.delta>0?"+":"")+f2(dr.delta):""}`:""}${top?"<br>"+top:""}"/>`;
+   if(dr&&dr.delta!=null&&Math.abs(dr.delta)>=D.model.sig)s+=`<text x="${X(i)}" y="${Y(x.score)-17}" text-anchor="middle" style="fill:${DIR[dr.dir]};font:600 11px var(--mono)">${dr.delta>0?"+":""}${f1(dr.delta)}</text>`});}
+ const step=Math.ceil(n/8);sc.forEach((x,i)=>{if(i%step==0||i==n-1)s+=`<text x="${X(i)}" y="${H-12}" text-anchor="middle" style="fill:var(--mute2);font:10px var(--mono)">${day(x.t).slice(5)}</text>`});
+ (a.crit_hist||[]).slice(1).forEach(([t,c])=>{const i=sc.findIndex(x=>x.t>=t);if(i>=0)s+=`<line x1="${X(i)-7}" x2="${X(i)-7}" y1="${T}" y2="${H-B}" style="stroke:var(--c4);stroke-dasharray:3 4"/><text x="${X(i)-11}" y="${T+11}" text-anchor="end" style="fill:var(--c4);font:600 10px var(--mono)">criticality → ${esc(c)}</text>`});
+ return s+`</svg><div class="legend"><span><i style="background:var(--amber)"></i>risk score</span><span><i style="background:var(--amber);opacity:.3"></i>uncertainty bounds</span><span><i style="border:2px solid var(--bad);background:none;border-radius:50%"></i>significant ΔR</span><span><i style="background:var(--c4)"></i>criticality change</span></div>`;
+}
+function waterfall(s){
+ const d=s.drift;
+ if(!d||d.delta==null)return empty(d?`${d.dir.replace("_"," ").toLowerCase()}: no comparable earlier score, so no ΔR yet.`:"No risk drift event.");
+ const cd=d.cd||{},ks=["V","C","D","A"],mx=Math.max(1,...ks.map(k=>Math.abs(cd[k]||0)));
+ let h=`<p class="note" style="margin:0 0 12px">${f1(d.prev)} → ${f1(s.score)} = <b class="mono" style="color:${DIR[d.dir]}">${d.delta>0?"+":""}${f2(d.delta)}</b> (${d.dir.toLowerCase()}${d.sig?", significant":""})</p><div class="grid" style="gap:8px">`;
+ ks.forEach(k=>{const v=cd[k];h+=`<div class="tile" style="--tc:${CC[k]}"><div class="ic"><b class="mono">${k}</b></div><div style="flex:1;min-width:0"><div class="x">${CN[k]}</div>
+  <div style="height:8px;position:relative;background:var(--line);border-radius:4px;margin-top:6px"><i style="position:absolute;top:0;bottom:0;border-radius:4px;background:${v>0?"var(--bad)":"var(--ok)"};${v>=0?"left:50%":"right:50%"};width:${Math.abs(v||0)/mx*50}%"></i><i style="position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--mute2)"></i></div></div>
+  <div class="z" style="color:${v>0?"var(--bad)":v<0?"var(--ok)":"var(--mute)"}">${v==null?"–":(v>0?"+":"")+f2(v)}</div></div>`});
+ return h+`</div><p class="note">Contribution = effective weight × change in that component; together they add up to ΔR.</p>`;
+}
+
+/* ------------------------------------------------ 7 explanations */
+let curScore=null;
+function sExplain(){
+ const a=byId[cur];
+ let h=head("Explainability","Why the score is what it is, and why it moved","Every factor points to a stored record: a check result, drift event, finding or criticality change. Evidence seen between two scores is listed as coinciding with the change, never as its proven cause.",true);
+ if(!a||!a.scores.length)return h+empty("No scores for this asset yet.");
+ if(!a.scores.some(s=>s.id==curScore))curScore=a.scores[a.scores.length-1].id;
+ const s=a.scores.find(x=>x.id==curScore);
+ h+=`<div class="chips" style="margin-bottom:16px">${a.scores.slice(-12).map(x=>`<button type="button" class="chip ${x.id==curScore?"on":""}" data-score="${x.id}">#${x.id} · ${day(x.t).slice(5)} · R ${f1(x.score)}</button>`).join("")}</div>`;
+ const FC={new_vulnerability:"var(--bad)",resolved_vulnerability:"var(--ok)",severity_change:"var(--hi)",compliance_transition:"var(--c5)",configuration_drift:"var(--c2)",policy_change:"var(--blue)",
+  criticality_change:"var(--c4)",stale_evidence:"var(--warn)",component_contribution:"var(--c3)",delta:"var(--amber)",baseline:"var(--blue)",note:"var(--mute2)",not_comparable:"var(--warn)",
+  no_evidence_found:"var(--mute2)",scan_imported:"var(--c1)",vulnerability:"var(--c1)",compliance:"var(--c3)",drift:"var(--c2)",component:"var(--mute)",data_quality:"var(--warn)"};
+ const item=e=>`<li style="--pc:${FC[e.factor]||"var(--mute)"}"><div class="run">${e.component?esc(e.component):"·"}</div><div class="pin"><i></i></div><div><div style="font:600 11px var(--mono);letter-spacing:.08em;color:${FC[e.factor]||"var(--mute)"};text-transform:uppercase">${esc(e.factor.replace(/_/g," "))}</div><div class="x" style="color:var(--ink)">${esc(e.detail)}</div>${e.evidence_ref?`<div class="mono note" style="font-size:11.5px;margin-top:3px;display:flex;gap:5px;align-items:center">${ic("link",12)}${esc(e.evidence_ref)}</div>`:""}</div></li>`;
+ const dr=s.expl.filter(e=>e.kind=="DRIFT"),cp=s.expl.filter(e=>e.kind=="SCORE");
+ h+=`<div class="grid g2">${pnl("Why it changed","rd",dr.length?`<ol class="ledger">${dr.map(item).join("")}</ol>`:empty("No drift explanation."))}${pnl("What it consists of","pri",gauge(s)+`<ol class="ledger" style="margin-top:14px">${cp.map(item).join("")}</ol>`)}</div>`;
+ return h;
+}
+function gauge(s){
+ const v=s.score,c=BD[s.band]||"var(--mute)",r=58,C=Math.PI*r;
+ const arc=(f,col,w)=>`<path d="M22 84 A${r} ${r} 0 0 1 138 84" style="fill:none;stroke:${col};stroke-width:${w};stroke-linecap:round;stroke-dasharray:${C*f} ${C}"/>`;
+ return `<div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap"><svg width="160" height="100" viewBox="0 0 160 100" style="flex:none">${arc(1,"var(--line)",12)}${v!=null?arc(v/100,c,12):""}
+ <text x="80" y="78" text-anchor="middle" style="fill:${c};font:600 26px var(--mono)">${f1(v)}</text><text x="80" y="96" text-anchor="middle" style="fill:var(--mute);font:600 9px var(--mono);letter-spacing:.12em">${s.status} · ${(s.band||"no band").toUpperCase()}</text></svg>
+ <div style="flex:1;min-width:200px">${["V","C","D","A"].map(k=>`<div class="row3" style="grid-template-columns:100px minmax(0,1fr) 44px;margin:7px 0"><span style="color:${CC[k]};font-size:12.5px;font-weight:600">${CN[k]}</span>${meter((s[k]||0)/100,CC[k])}<span class="val">${f1(s[k])}</span></div>`).join("")}
+ ${s.lo!=null&&s.hi-s.lo>.05?`<p class="note" style="color:var(--warn);margin:4px 0 0">bounds ${f1(s.lo)}–${f1(s.hi)} (missing or undetermined data)</p>`:""}</div></div>`;
+}
+
+/* ------------------------------------------------ 8 evaluation */
+function sEval(){
+ const E=D.evaluation;
+ let h=head("Evaluation","Seventeen scenarios through the real pipeline","Synthetic evidence for every required case (violations, remediation, new vulnerability, missing CVSS, criticality change, no change, collector failure, stale scan, malformed report, database and OPA failures) runs through real OPA, drift detection, Greenbone import and scoring. Expectations are declared before each run.");
+ if(!E)return h+empty("Run python cli.py evaluate-scenarios to generate results.");
+ const m=E.metrics;
+ h+=ro([[`${m.scenarios_passed}/${m.scenarios}`,"Scenarios passed","statuses, drift and ΔR direction",m.scenarios_passed==m.scenarios?"var(--ok)":"var(--bad)",m.scenarios_passed/m.scenarios],
+  [`${m.check_tp}/${m.check_tp+m.check_fn}`,"Injected violations caught",`false positives ${m.check_fp} · undetermined ${m.undetermined_correct}`,"var(--c1)"],
+  [`${m.drift_tp}/${m.drift_tp+m.drift_fn}`,"Expected drift found",`unexpected ${m.drift_fp} · missed ${m.drift_fn}`,"var(--amber)"],
+  [m.mean_assessment_ms+" ms","Mean assess time",`max ${m.max_assessment_ms} ms · ΔR direction ${m.risk_direction_correct}`,"var(--c5)"]]);
+ if(E.scenarios)h+=`<div class="mt">${pnl("Scenario sheet","tst",`<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px">${E.scenarios.map((s,i)=>`<div class="tile" style="--tc:${s.passed?"var(--ok)":"var(--bad)"}"><div class="ic">${ic(s.passed?"chk":"x",16)}</div><div style="min-width:0"><div class="x"><span class="mono" style="color:var(--mute2)">${String(i+1).padStart(2,"0")}</span> ${esc(s.name.replace(/_/g," "))}</div><div class="y">${s.exp?`ΔR expected ${esc(s.exp.toLowerCase())}, got ${esc((s.obs||"–").toLowerCase())}`:"behaviour checks"}</div></div><div class="z" style="font-size:11px">${s.ms?esc(s.ms)+" ms":""}</div></div>`).join("")}</div>`)}</div>`;
+ h+=`<div class="callout mt">${ic("info",18)}<div><b>What this shows.</b> These scenarios were written by the author with synthetic evidence. They show the implementation behaves as designed; they are not detection accuracy on real systems. Field measurements on an isolated Ubuntu VM go in docs/EVALUATION.md.</div></div>`;
+ return h;
+}
+
+/* ------------------------------------------------ 9 baselines */
+function sBaseline(){
+ let h=head("Baseline comparison","CVSS-only vs compliance-only vs proposed","The same stored data ranked three ways. CVSS-only ignores configuration and context; compliance-only ignores vulnerabilities; the proposed score combines both with drift and asset criticality. Rank 1 is the highest priority.");
+ const E=D.evaluation&&D.evaluation.baseline,rows=(E?E.table:D.prio)||[];
+ if(rows.length<2)return h+empty("At least two assets with data are needed for a ranking comparison.");
+ const tau=E?E.tau:{proposed_vs_cvss_only:D.tau.cvss,proposed_vs_compliance_only:D.tau.comp};
+ h+=ro([[f2(tau.proposed_vs_cvss_only),"Kendall τ vs CVSS-only","1 identical order · 0 unrelated","var(--c1)",Math.max(0,tau.proposed_vs_cvss_only)],
+  [f2(tau.proposed_vs_compliance_only),"Kendall τ vs compliance-only","1 identical order · 0 unrelated","var(--c3)",Math.max(0,tau.proposed_vs_compliance_only)],
+  [String(rows.length),"Assets ranked",E?"synthetic evaluation portfolio":"assets in this database","var(--amber)"],
+  [E&&E.top2?f2(E.top2.proposed_vs_cvss_only):"–","Top-2 overlap vs CVSS-only","share of the same top-2 assets","var(--c5)"]]);
+ h+=`<div class="grid g32 mt">${pnl("How each method orders the assets","cmpb",`<div class="cw" style="--mw:520px">${bump(rows)}</div>`)}${pnl("Weight sensitivity","pri",E&&E.sens_tau?Object.entries(E.sens_tau).map(([k,v])=>`<div class="row3" style="grid-template-columns:140px minmax(0,1fr) 44px"><span style="font-size:13px">${esc(k.replace(/_/g," "))}</span>${meter(Math.max(0,v),"var(--c5)")}<span class="val">${f2(v)}</span></div>`).join("")+`<p class="note">τ between the ranking under each alternative weight set and the default ranking. Higher means the order is robust to reasonable weight changes.</p>`:empty("Run python cli.py evaluate-baselines."))}</div>`;
+ h+=`<div class="mt">${pnl("Ranking table","db",`<div class="tw"><table><thead><tr><th>Asset</th><th>Criticality</th><th>Max CVSS</th><th>High</th><th>Failing</th><th>R</th><th>CVSS-only</th><th>Compliance-only</th><th>Proposed</th></tr></thead><tbody>
+ ${rows.map(r=>`<tr><td class="mono" style="font-weight:600">${esc(r.asset_id)}</td><td>${stamp(r.criticality,BD[r.criticality]||"var(--mute)")}</td><td class="mono">${r.max_cvss??"–"}</td><td class="mono">${r.high_findings}</td><td class="mono">${r.non_compliant??"–"}</td><td class="mono">${f1(r.risk_score)}</td><td class="mono">#${r.rank_cvss_only}</td><td class="mono">#${r.rank_compliance_only}</td><td class="mono" style="color:var(--amber);font-weight:600">#${r.rank_proposed}</td></tr>`).join("")}</tbody></table></div>
+ <p class="note">These statistics show how the methods differ on the stored data. They do not show which ordering is correct; that needs an independent ground truth such as expert rankings (docs/EVALUATION.md).</p>`)}</div>`;
+ return h;
+}
+function bump(rows){
+ const cols=[["rank_cvss_only","CVSS-only"],["rank_compliance_only","Compliance-only"],["rank_proposed","Proposed"]];
+ const mxr=Math.max(...rows.flatMap(r=>cols.map(c=>r[c[0]]))),Wd=640,H=Math.max(230,rows.length*46+50),L=58,R=180,X=i=>L+i*(Wd-L-R)/2;
+ const pos={};cols.forEach(([k])=>{const g={};rows.forEach((r,i)=>{(g[r[k]]=g[r[k]]||[]).push(i)});Object.entries(g).forEach(([rk,ids])=>ids.forEach((i,j)=>{pos[k+i]=36+(rk-1)/Math.max(1,mxr-1)*(H-82)+(j-(ids.length-1)/2)*14}))});
+ let s=`<svg viewBox="0 0 ${Wd} ${H}" width="100%">`;
+ cols.forEach(([k,t],ci)=>s+=`<line x1="${X(ci)}" x2="${X(ci)}" y1="24" y2="${H-28}" style="stroke:var(--line2)"/><text x="${X(ci)}" y="14" text-anchor="middle" style="fill:${ci==2?"var(--amber)":"var(--mute)"};font:600 10.5px var(--mono);letter-spacing:.1em">${t.toUpperCase()}</text>`);
+ for(let k=1;k<=mxr;k++){const y=36+(k-1)/Math.max(1,mxr-1)*(H-82);s+=`<text x="${L-14}" y="${y+4}" text-anchor="end" style="fill:var(--mute2);font:10.5px var(--mono)">#${k}</text>`}
+ rows.forEach((r,i)=>{const c=PAL[i%PAL.length],pts=cols.map(([k],ci)=>[X(ci),pos[k+i]]);
+  s+=`<g data-tip="<b>${esc(r.asset_id)}</b><br>CVSS-only #${r.rank_cvss_only} · compliance-only #${r.rank_compliance_only} · proposed #${r.rank_proposed}"><path d="M${pts[0].join(" ")}C${pts[0][0]+60} ${pts[0][1]} ${pts[1][0]-60} ${pts[1][1]} ${pts[1].join(" ")}S${pts[2][0]-60} ${pts[2][1]} ${pts[2].join(" ")}" style="fill:none;stroke:${c};stroke-width:2.6;opacity:.9"/>${pts.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="5.5" style="fill:${c};stroke:var(--panel);stroke-width:2"/>`).join("")}
+  <text x="${X(2)+12}" y="${pts[2][1]+4}" style="fill:${c};font:600 11.5px var(--mono)">${esc(r.asset_id)}</text></g>`});
+ return s+`</svg>`;
+}
+
+/* ------------------------------------------------ 10 data quality */
+function sQuality(){
+ let h=head("Data quality","Assessment history, gaps and stale data","Failed runs are never used as a drift reference. Undetermined checks and stale scans widen the score bounds and are listed here instead of being hidden.");
+ const runs=A.flatMap(a=>a.runs.map(r=>({...r,asset:a.id}))).sort((x,y)=>y.started_at.localeCompare(x.started_at));
+ const und=A.flatMap(a=>a.checks.filter(c=>c.status=="UNKNOWN"||c.status=="ERROR").map(c=>({...c,asset:a.id})));
+ const warn=[];A.forEach(a=>{const s=a.scans[a.scans.length-1];if(!s)warn.push([a.id,"No vulnerability scan imported, so V is unknown."]);else{const age=(Date.now()-Date.parse(s.scan_ended_at||s.imported_at))/864e5;if(!(age<=D.model.stale_days))warn.push([a.id,`Latest scan is ${isFinite(age)?age.toFixed(0)+" days":"undated"} old (limit ${D.model.stale_days}).`])}
+  if(!a.checks.length)warn.push([a.id,"No successful assessment, so C is unknown."])});
+ h+=ro([[String(runs.length),"Assessment runs",`${runs.filter(r=>r.status=="COMPLETE").length} complete · ${runs.filter(r=>r.status=="PARTIAL").length} partial`,"var(--c1)"],
+  [String(runs.filter(r=>r.status=="FAILED").length),"Failed runs","never used as drift reference","var(--bad)"],
+  [String(und.length),"Undetermined checks","unknown or error, latest runs","var(--unk)"],
+  [String(warn.length),"Stale or missing data","warnings across assets","var(--warn)"]]);
+ h+=`<div class="grid g2 mt">${pnl("Warnings","alert",(warn.length||und.length)?`<div class="grid" style="gap:8px">${warn.map(([a,w])=>`<div class="tile" style="--tc:var(--warn)"><div class="ic">${ic("alert")}</div><div style="min-width:0"><div class="x mono">${esc(a)}</div><div class="y">${esc(w)}</div></div></div>`).join("")}
+ ${und.map(c=>`<div class="tile" style="--tc:${ST[c.status]}"><div class="ic">${ic("x")}</div><div style="min-width:0"><div class="x mono">${esc(c.asset)} · ${c.id}</div><div class="y">${esc(c.reason)}</div></div><div class="z" style="font-size:11px">${SL[c.status]}</div></div>`).join("")}</div>`:empty("No data-quality warnings."))}
+ ${pnl("Risk model card","db",Object.entries(W).map(([k,v])=>`<div class="row3" style="grid-template-columns:120px minmax(0,1fr) 44px"><span style="color:${CC[k]};font-size:13px;font-weight:600">${CN[k]} (${k})</span>${meter(v,CC[k])}<span class="val">${v.toFixed(2)}</span></div>`).join("")+
+ `<p class="note">Bands: ${Object.entries(D.model.bands).map(([b,v])=>`${b} ≥ ${v}`).join(" · ")}<br>Criticality: ${Object.entries(D.model.crit).map(([b,v])=>`${b} ${v}`).join(" · ")}<br>Check weights: ${Object.entries(D.model.check_weights).map(([b,v])=>`${b} ${v}`).join(" · ")}<br>Scan stale after ${D.model.stale_days} days · significant |ΔR| ≥ ${D.model.sig}</p>`,esc(D.model.version))}</div>`;
+ h+=`<div class="mt">${pnl("All assessment runs","hist",`<div class="tw"><table><thead><tr><th>Run</th><th>Asset</th><th>Started</th><th>Status</th><th>Policy</th><th>OPA</th><th>Collector</th><th>Origin</th><th>Error</th></tr></thead><tbody>
+ ${runs.map(r=>`<tr><td class="mono">#${r.run_id}</td><td class="mono">${esc(r.asset)}</td><td class="mono">${dt(r.started_at)}</td><td>${stamp(r.status,r.status=="COMPLETE"?"var(--ok)":r.status=="PARTIAL"?"var(--warn)":"var(--bad)")}</td><td class="mono">${esc(r.policy_version||"–")}</td><td class="mono">${esc(r.opa_version||"–")}</td><td class="mono">${esc(r.collector_version||"–")}</td><td class="mono">${esc(r.data_origin)}</td><td class="note">${esc(r.error_message||"")}</td></tr>`).join("")}</tbody></table></div>`)}</div>`;
+ return h;
+}
+
+/* ------------------------------------------------ boot */
+const SECTIONS=[
+ {id:"overview",ico:"ov",nav:"Mission control",grp:"Monitor",f:sOverview},
+ {id:"compliance",ico:"cmp",nav:"Compliance",grp:"Monitor",f:sCompliance},
+ {id:"drift",ico:"drf",nav:"Config drift",grp:"Monitor",f:sDrift},
+ {id:"vulnerabilities",ico:"vul",nav:"Vulnerabilities",grp:"Monitor",f:sVuln},
+ {id:"prioritisation",ico:"pri",nav:"Risk scoring",grp:"Risk",f:sPrio},
+ {id:"riskdrift",ico:"rd",nav:"Risk drift",grp:"Risk",f:sRiskDrift},
+ {id:"explanations",ico:"exp",nav:"Explanations",grp:"Risk",f:sExplain},
+ {id:"evaluation",ico:"tst",nav:"Scenarios",grp:"Evaluate",f:sEval},
+ {id:"baselines",ico:"cmpb",nav:"Baselines",grp:"Evaluate",f:sBaseline},
+ {id:"quality",ico:"hist",nav:"Data quality",grp:"Evaluate",f:sQuality}];
+document.title=M.console_name||"Risk Drift Monitor";
+$("#bName").textContent=M.short_name||"RDF";$("#bSub").textContent=M.console_name||"Risk Drift Monitor";
+$("#stk").textContent="Ubuntu · OPA · Greenbone";
+const so=$("#sOrigin");so.style.setProperty("--sc",synthetic?"var(--warn)":"var(--ok)");so.lastElementChild.textContent=synthetic?"Synthetic demo data":`${A.length} live asset${A.length==1?"":"s"}`;
+let rail="",g="";SECTIONS.forEach(s=>{if(s.grp!=g){if(g)rail+=`</div>`;g=s.grp;rail+=`<div class="g"><span class="gl">${g}</span>`}rail+=`<a href="#${s.id}" data-s="${s.id}">${ic(s.ico,15)}${s.nav}</a>`});
+$("#rail").innerHTML=rail+`</div>`;
+renderMast();
+function animate(root){root.querySelectorAll(".meter i,.ro .m i").forEach(b=>requestAnimationFrame(()=>requestAnimationFrame(()=>b.style.width=b.dataset.w+"%")));
+ root.querySelectorAll("[data-count]").forEach(el=>{const raw=el.dataset.count,m=raw.match(/^([+-]?[\d.]+)(.*)$/);if(!m||raw.includes("/"))return;const tgt=parseFloat(m[1]),dec=(m[1].split(".")[1]||"").length,sign=m[1].startsWith("+")?"+":"";
+  const t0=performance.now(),st=t=>{const k=Math.min(1,(t-t0)/800),v=tgt*(1-Math.pow(1-k,3));el.textContent=(v>0?sign:"")+v.toFixed(dec)+m[2];if(k<1)requestAnimationFrame(st)};requestAnimationFrame(st)})}
+let first=true;
+function go(keep){const id=(location.hash||"#overview").slice(1),s=SECTIONS.find(x=>x.id==id)||SECTIONS[0];
+ $("#main").innerHTML=`<section>${s.f()}<div class="foot"><span>${esc(M.short_name||"RDF")} · ${esc(M.title)}</span><span class="mono">snapshot ${esc(dt(M.built))} UTC · ${esc(M.db)} · stored records only</span></div></section>`;
+ document.querySelectorAll(".rail a").forEach(a=>a.classList.toggle("on",a.dataset.s==s.id));
+ const on=document.querySelector(".rail a.on");if(on&&on.parentElement)on.parentElement.parentElement.scrollLeft=on.offsetLeft-60;
+ animate($("#main"));if(first){animate($("#hero"));first=false}
+ if(!keep){const top=$(".mast").offsetHeight;if(scrollY>top)scrollTo(0,top)}}
+addEventListener("hashchange",()=>go());
+document.addEventListener("click",e=>{const c=e.target.closest("[data-asset]");if(c){cur=c.dataset.asset;if(c.dataset.go&&location.hash!="#"+c.dataset.go){location.hash=c.dataset.go;return}go(true);return}
+ const p=e.target.closest("[data-prf]");if(p){prf=p.dataset.prf;go(true);return}
+ const s=e.target.closest("[data-score]");if(s){curScore=+s.dataset.score;go(true)}});
+document.addEventListener("change",e=>{if(e.target.id=="asel"){cur=e.target.value;go(true)}});
+const root=document.documentElement;
+const isDark=()=>root.getAttribute("data-theme")?root.getAttribute("data-theme")=="dark":!matchMedia("(prefers-color-scheme: light)").matches;
+const lab=()=>{$("#tlab").textContent=isDark()?"Light":"Dark"};
+try{const sv=localStorage.getItem("rdf-theme");if(sv)root.setAttribute("data-theme",sv)}catch(e){}
+if(location.search.includes("light"))root.setAttribute("data-theme","light");if(location.search.includes("dark"))root.setAttribute("data-theme","dark");
+lab();
+$("#theme").onclick=()=>{const t=isDark()?"light":"dark";root.setAttribute("data-theme",t);try{localStorage.setItem("rdf-theme",t)}catch(e){}lab()};
+go(true);
+</script></body></html>
