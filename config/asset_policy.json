@@ -1,0 +1,52 @@
+{
+  "_comment": "Asset inventory, compliance policy parameters and collector settings. Edit for your environment. policy_params are passed to OPA as part of the evidence input, so changing them is recorded and detected as a POLICY_CHANGE drift event.",
+  "assets": [
+    {
+      "asset_id": "ubuntu-vm-01",
+      "hostname": "ubuntu-vm-01",
+      "ip_address": "192.168.56.10",
+      "criticality": "High",
+      "description": "Ubuntu test VM assessed by the framework (authorized lab asset)"
+    },
+    {
+      "asset_id": "lab-ubuntu-container",
+      "hostname": "lab-ubuntu-container",
+      "ip_address": "127.0.0.1",
+      "criticality": "High",
+      "description": "Ubuntu 24.04 lab container used for the controlled drift experiment (lab/drift_experiment.sh); real evidence, not a production host"
+    }
+  ],
+  "policy_params": {
+    "ssh_allowed_permit_root_login": ["no"],
+    "ssh_password_authentication_allowed": false,
+    "ssh_absent_is_compliant": true,
+    "firewall_tool": "ufw",
+    "firewall_allowed_default_incoming": ["deny", "reject"],
+    "services_denylist": [
+      "telnet", "telnetd", "inetutils-telnetd", "rsh", "rlogin", "rexec",
+      "vsftpd", "proftpd", "pure-ftpd", "tftpd-hpa", "xinetd",
+      "avahi-daemon", "cups", "cups-browsed", "snmpd", "rpcbind",
+      "nfs-server", "smbd", "nmbd", "slapd", "isc-dhcp-server", "squid", "dovecot"
+    ],
+    "services_allowlist_mode": false,
+    "services_allowlist": [],
+    "file_baseline": {
+      "/etc/passwd": {"owner": "root", "groups": ["root"], "max_mode": "0644"},
+      "/etc/shadow": {"owner": "root", "groups": ["root", "shadow"], "max_mode": "0640"},
+      "/etc/group": {"owner": "root", "groups": ["root"], "max_mode": "0644"},
+      "/etc/gshadow": {"owner": "root", "groups": ["root", "shadow"], "max_mode": "0640"}
+    },
+    "password_min_length": 14,
+    "password_min_classes": 3,
+    "password_max_days": 365,
+    "password_min_days": 1,
+    "lockout_max_deny": 5,
+    "lockout_min_unlock_time": 900,
+    "updates_require_security_origin": true,
+    "updates_require_timer": true
+  },
+  "collector": {
+    "command_timeout_seconds": 15,
+    "max_file_bytes": 1048576
+  }
+}

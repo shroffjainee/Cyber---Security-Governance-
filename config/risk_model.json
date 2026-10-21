@@ -1,0 +1,37 @@
+{
+  "_comment": "Prototype risk-priority model. Scores are 0-100 PRIORITY indicators, not validated probabilities of exploitation or loss. Change model_version whenever weights or rules change; risk drift is only computed between scores of the same model_version.",
+  "model_version": "rdf-risk-1.0",
+  "weights": {"V": 0.45, "C": 0.25, "D": 0.20, "A": 0.10},
+  "alternative_weight_sets": {
+    "equal":            {"V": 0.25, "C": 0.25, "D": 0.25, "A": 0.25},
+    "vulnerability_heavy": {"V": 0.60, "C": 0.20, "D": 0.10, "A": 0.10},
+    "compliance_heavy": {"V": 0.30, "C": 0.40, "D": 0.20, "A": 0.10},
+    "drift_heavy":      {"V": 0.35, "C": 0.20, "D": 0.35, "A": 0.10}
+  },
+  "vulnerability": {
+    "max_component_share": 0.7,
+    "breadth_share": 0.3,
+    "breadth_saturation": 10.0,
+    "min_cvss_counted": 0.1,
+    "label_fallback_cvss": {"critical": 9.5, "high": 8.0, "medium": 5.5, "low": 2.5, "log": 0.0},
+    "unknown_cvss_default": 5.0,
+    "max_scan_age_days": 30,
+    "min_qod": 30
+  },
+  "compliance": {
+    "check_weights": {
+      "SSH-001": 1.0, "SSH-002": 0.9, "FW-001": 1.0, "SVC-001": 0.6,
+      "FILE-001": 0.9, "PWD-001": 0.5, "LOCK-001": 0.5, "UPD-001": 0.8
+    },
+    "status_risk": {"COMPLIANT": 0.0, "NON_COMPLIANT": 1.0, "UNKNOWN": 0.5, "ERROR": 0.5},
+    "max_undetermined_fraction": 0.5
+  },
+  "drift": {
+    "window_days": 7,
+    "priority_points": {"CRITICAL": 40, "HIGH": 25, "MEDIUM": 10, "LOW": 5, "INFO": 0},
+    "ignore_categories": ["BASELINE", "CORRECTED", "EVIDENCE_RESTORED"]
+  },
+  "criticality": {"Low": 25, "Medium": 50, "High": 75, "Critical": 100},
+  "bands": {"Low": 0, "Medium": 25, "High": 50, "Critical": 75},
+  "risk_drift": {"significant_delta": 5.0}
+}
